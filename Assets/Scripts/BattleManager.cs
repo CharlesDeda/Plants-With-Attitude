@@ -36,6 +36,10 @@ public class BattleManager : MonoBehaviour
     public int bossHealth = 10;
     public int bossDamage = 2;
 
+    [Header("FX")]
+    public float shakeDuration = 1.2f;
+    public float shakeMagnitude = 12f;
+
     [Header("UI")]
     public Button sunButton;
     public Button waterButton;
@@ -44,8 +48,8 @@ public class BattleManager : MonoBehaviour
     public TMP_Text playerHpText;
     public TMP_Text enemyHpText;
     public TMP_Text waveText;
-    public TMP_Text moveText;  
-    public TMP_Text cadenceText;
+    public TMP_Text playerCadenceText;
+    public TMP_Text enemyCadenceText;
 
     public Image enemyImage; 
     public Sprite normalEnemySprite;
@@ -69,9 +73,18 @@ public class BattleManager : MonoBehaviour
         StartNewCycle();
     }
 
-    public void OnSunPressed()  { if (!inputLocked) StartCoroutine(RoundWithCountdown(Move.Sun)); }
-    public void OnWaterPressed(){ if (!inputLocked) StartCoroutine(RoundWithCountdown(Move.Water)); }
-    public void OnSoilPressed() { if (!inputLocked) StartCoroutine(RoundWithCountdown(Move.Soil)); }
+   bool TryLockInput()
+    {
+        if (inputLocked) return false;
+        inputLocked = true;
+        SetButtonsInteractable(false);
+        return true;
+    }
+
+    public void OnSunPressed()  { if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Sun)); }
+    public void OnWaterPressed(){ if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Water)); }
+    public void OnSoilPressed() { if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Soil)); }
+
 
 
     void SetButtonsInteractable(bool interactable)
@@ -84,10 +97,19 @@ public class BattleManager : MonoBehaviour
     void StartNewCycle()
     {
         normalsRemainingInCycle = Random.Range(normalMinPerCycle, normalMaxPerCycle + 1);
-        playerHealth = Mathf.Min(playerHealth + 2, playerMaxHealth);
+        playerHealth = playerMaxHealth;
+
+        if (playerCadenceText) playerCadenceText.text = "";
+        if (enemyCadenceText)  enemyCadenceText.text  = "";
+        if (waveText) waveText.text = $"Wave {cycleNumber}";
+
+        inputLocked = false;
+        SetButtonsInteractable(true);
+
         SpawnNextEnemy();
         RefreshUI();
     }
+
 
     void SpawnNextEnemy()
     {
@@ -110,32 +132,34 @@ public class BattleManager : MonoBehaviour
         return 1f + 0.1f * (cycleNumber - 1);
     }
 
-    void OnPlayerMove(Move playerMove)
+  void OnPlayerMove(Move playerMove)
     {
-        if (currentEnemy == null) return;
+        StartCoroutine(RoundWithCountdown(playerMove));
+    }
 
-        Move enemyMove = GetEnemyMove(currentEnemy.Type);
+
+    void ApplyOutcome(Move playerMove, Move enemyMove)
+    {
         int outcome = Resolve(playerMove, enemyMove);
-
-        if (moveText) moveText.text = $"{MoveToPretty(enemyMove)}";
 
         if (outcome > 0)
         {
             int dmg = currentEnemy.Type == EnemyType.Boss ? playerDamage : playerDamage;
             currentEnemy.Health = Mathf.Max(0, currentEnemy.Health - dmg);
+            if (enemyHpText) StartCoroutine(ShakeRect(enemyHpText.rectTransform, shakeDuration, shakeMagnitude));
         }
         else if (outcome < 0)
         {
             int dmg = currentEnemy.Type == EnemyType.Boss ? bossDamage : normalDamage;
             playerHealth = Mathf.Max(0, playerHealth - dmg);
+            if (playerHpText) StartCoroutine(ShakeRect(playerHpText.rectTransform, shakeDuration, shakeMagnitude));
         }
 
         RefreshUI();
         CheckRoundOver();
     }
 
-
-    string MoveToPretty(Move m)
+    string MoveToText(Move m)
     {
         switch (m)
         {
@@ -227,22 +251,47 @@ public class BattleManager : MonoBehaviour
     {
         if (currentEnemy == null) yield break;
 
-        inputLocked = true;
-        SetButtonsInteractable(false);
+        Move enemyMove = GetEnemyMove(currentEnemy.Type);
 
-        if (cadenceText) cadenceText.text = "";
+        if (playerCadenceText) playerCadenceText.text = "";
+        if (enemyCadenceText)  enemyCadenceText.text  = "";
+
         foreach (var word in cadenceWords)
         {
-            if (cadenceText) cadenceText.text = word;
+            if (playerCadenceText) playerCadenceText.text = word;
+            if (enemyCadenceText)  enemyCadenceText.text  = word;
             yield return new WaitForSeconds(beatSeconds);
         }
 
-        if (cadenceText) cadenceText.text = $"{MoveToPretty(playerMove)}!";
+        if (playerCadenceText) playerCadenceText.text = $"{MoveToText(playerMove)}!";
+        if (enemyCadenceText)  enemyCadenceText.text  = $"{MoveToText(enemyMove)}!";
         yield return new WaitForSeconds(beatSeconds);
 
-        OnPlayerMove(playerMove);
+        ApplyOutcome(playerMove, enemyMove);
 
         inputLocked = false;
         SetButtonsInteractable(true);
     }
+
+
+    System.Collections.IEnumerator ShakeRect(RectTransform target, float duration, float magnitude)
+    {
+        if (target == null) yield break;
+
+        Vector2 original = target.anchoredPosition;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            float offsetX = Random.Range(-1f, 1f) * magnitude;
+            float offsetY = Random.Range(-1f, 1f) * magnitude * 0.5f; 
+            target.anchoredPosition = original + new Vector2(offsetX, offsetY);
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        target.anchoredPosition = original;
+    }
+
 }
