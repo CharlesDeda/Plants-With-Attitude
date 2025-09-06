@@ -36,7 +36,7 @@ public class BattleManager : MonoBehaviour
     public int normalHealth = 5;
     public int normalDamage = 1;
     public int bossHealth = 10;
-    public int bossDamage = 2;
+    public int bossDamage = 1;
 
     [Header("FX")]
     public float shakeDuration = 1.2f;
@@ -68,7 +68,7 @@ public class BattleManager : MonoBehaviour
 
     [Header("Special")]
     public int specialMeterMax = 7;
-    public int specialDamage = 3;
+    public int specialDamage = 5;
     public Button specialButton;
     public Slider specialMeterBar;
     private int specialMeter = 0;
