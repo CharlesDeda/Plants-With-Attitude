@@ -64,13 +64,29 @@ public class BattleManager : MonoBehaviour
     private readonly string[] cadenceWords = { "Sun...", "Soil...", "Water..." };
     private bool inputLocked = false;
 
+    [Header("Special")]
+    public int specialMeterMax = 7;
+    public int specialDamage = 3;
+    public Button specialButton;
+    public TMP_Text specialMeterText;
+
+    private int specialMeter = 0;
+    private int specialHitStreak = 0;
+
+    private const float specialBaseChance = 0.30f;
+    private const float specialIncreasePerHit = 0.10f;
+    private const float specialMaxChance = 0.95f;
+
+
     void Start()
     {
         sunButton.onClick.AddListener(OnSunPressed);
         waterButton.onClick.AddListener(OnWaterPressed);
         soilButton.onClick.AddListener(OnSoilPressed);
+        if (specialButton) specialButton.onClick.AddListener(OnSpecialPressed);
 
         StartNewCycle();
+        UpdateSpecialUI();
     }
 
    bool TryLockInput()
@@ -81,17 +97,22 @@ public class BattleManager : MonoBehaviour
         return true;
     }
 
-    public void OnSunPressed()  { if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Sun)); }
-    public void OnWaterPressed(){ if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Water)); }
-    public void OnSoilPressed() { if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Soil)); }
+    public void OnSunPressed()   { if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Sun)); }
+    public void OnWaterPressed() { if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Water)); }
+    public void OnSoilPressed()  { if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Soil)); }
 
-
+    public void OnSpecialPressed()
+    {
+        if (specialMeter < specialMeterMax) return;
+        if (TryLockInput()) StartCoroutine(RoundWithCountdownSpecial());
+    }
 
     void SetButtonsInteractable(bool interactable)
     {
         if (sunButton)   sunButton.interactable = interactable;
         if (waterButton) waterButton.interactable = interactable;
         if (soilButton)  soilButton.interactable = interactable;
+        if (specialButton)  specialButton.interactable = interactable && (specialMeter >= specialMeterMax);
     }
 
     void StartNewCycle()
@@ -108,6 +129,7 @@ public class BattleManager : MonoBehaviour
 
         SpawnNextEnemy();
         RefreshUI();
+        UpdateSpecialUI();
     }
 
 
@@ -127,6 +149,37 @@ public class BattleManager : MonoBehaviour
         RefreshUI();
     }
 
+    float CurrentSpecialChance()
+{
+    float c = specialBaseChance + specialIncreasePerHit * specialHitStreak;
+    return Mathf.Min(c, specialMaxChance);
+}
+
+    void UpdateSpecialUI()
+    {
+        if (specialMeterText)
+        {
+            int pct = Mathf.RoundToInt(CurrentSpecialChance() * 100f);
+            string state = specialMeter >= specialMeterMax ? "Ready" : "Building";
+            specialMeterText.text = $"Special: {specialMeter}/{specialMeterMax} • {state} • {pct}%";
+        }
+
+        if (specialButton && !inputLocked)
+            specialButton.interactable = specialMeter >= specialMeterMax;
+    }
+
+    void IncrementSpecialMeter(int amt = 1)
+    {
+        specialMeter = Mathf.Clamp(specialMeter + amt, 0, specialMeterMax);
+        UpdateSpecialUI();
+    }
+
+    void ConsumeSpecialMeter()
+    {
+        specialMeter = 0;
+        UpdateSpecialUI();
+    }
+
     float BossHpScale()
     {
         return 1f + 0.1f * (cycleNumber - 1);
@@ -137,6 +190,12 @@ public class BattleManager : MonoBehaviour
         StartCoroutine(RoundWithCountdown(playerMove));
     }
 
+        public void OnSpecialPressed()
+    {
+        if (specialMeter < specialMeterMax) return;
+        if (!TryLockInput()) return;
+        StartCoroutine(RoundWithCountdownSpecial());
+    }
 
     void ApplyOutcome(Move playerMove, Move enemyMove)
     {
@@ -155,6 +214,7 @@ public class BattleManager : MonoBehaviour
             if (playerHpText) StartCoroutine(ShakeRect(playerHpText.rectTransform, shakeDuration, shakeMagnitude));
         }
 
+        IncrementSpecialMeter(1);
         RefreshUI();
         CheckRoundOver();
     }
@@ -197,6 +257,10 @@ public class BattleManager : MonoBehaviour
     {
         if (playerHealth <= 0)
         {
+            specialMeter = 0;
+            specialHitStreak = 0;
+            UpdateSpecialUI();
+
             cycleNumber = 1;
             StartNewCycle();
             return;
@@ -272,6 +336,51 @@ public class BattleManager : MonoBehaviour
         inputLocked = false;
         SetButtonsInteractable(true);
     }
+
+    System.Collections.IEnumerator RoundWithCountdownSpecial()
+    {
+        if (currentEnemy == null) yield break;
+
+        Move enemyMove = GetEnemyMove(currentEnemy.Type);
+
+        if (playerCadenceText) playerCadenceText.text = "";
+        if (enemyCadenceText)  enemyCadenceText.text  = "";
+
+        foreach (var word in cadenceWords)
+        {
+            if (playerCadenceText) playerCadenceText.text = word;
+            if (enemyCadenceText)  enemyCadenceText.text  = word;
+            yield return new WaitForSeconds(beatSeconds);
+        }
+
+        if (playerCadenceText) playerCadenceText.text = "Special!";
+        if (enemyCadenceText)  enemyCadenceText.text  = $"{MoveToText(enemyMove)}!";
+        yield return new WaitForSeconds(beatSeconds);
+
+        float chance = CurrentSpecialChance();
+        bool hit = Random.value < chance;
+
+        ConsumeSpecialMeter();
+
+        if (hit)
+        {
+            specialHitStreak++;
+            currentEnemy.Health = Mathf.Max(0, currentEnemy.Health - specialDamage);
+            if (enemyHpText) StartCoroutine(ShakeRect(enemyHpText.rectTransform, shakeDuration, shakeMagnitude));
+        }
+        else
+        {
+            specialHitStreak = 0;
+        }
+
+        UpdateSpecialUI();
+        RefreshUI();
+        CheckRoundOver();
+
+        inputLocked = false;
+        SetButtonsInteractable(true);
+    }
+
 
 
     System.Collections.IEnumerator ShakeRect(RectTransform target, float duration, float magnitude)
