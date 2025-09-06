@@ -616,7 +616,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -6, y: 91}
+  m_AnchoredPosition: {x: -6, y: 98}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &293827709
@@ -655,7 +655,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -14, y: -89}
+  m_AnchoredPosition: {x: -15, y: -118}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &293827711
@@ -752,7 +752,7 @@ GameObject:
   - component: {fileID: 917139938}
   - component: {fileID: 917139939}
   m_Layer: 5
-  m_Name: MoveText
+  m_Name: EnemyMove
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -774,7 +774,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -255, y: 5.8112717}
+  m_AnchoredPosition: {x: -265, y: -7}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &917139938
@@ -912,7 +912,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -304, y: -88}
+  m_AnchoredPosition: {x: -303, y: -118}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1137265769
@@ -1297,7 +1297,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 679, y: 50}
+  m_AnchoredPosition: {x: 679, y: 41}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1634128572
@@ -1568,18 +1568,24 @@ MonoBehaviour:
   normalDamage: 1
   bossHealth: 10
   bossDamage: 2
+  shakeDuration: 0.2
+  shakeMagnitude: 12
   sunButton: {fileID: 1634128572}
   waterButton: {fileID: 293827711}
   soilButton: {fileID: 1137265769}
   playerHpText: {fileID: 2068754185}
   enemyHpText: {fileID: 1928446537}
   waveText: {fileID: 270667392}
-  moveText: {fileID: 917139939}
-  cadenceText: {fileID: 2021641877}
+  playerCadenceText: {fileID: 2021641877}
+  enemyCadenceText: {fileID: 917139939}
   enemyImage: {fileID: 1582911411}
   normalEnemySprite: {fileID: -2413806693520163455, guid: ece06beb842404a3cbfcc1ba9aca7885, type: 3}
   bossEnemySprite: {fileID: -2413806693520163455, guid: ece06beb842404a3cbfcc1ba9aca7885, type: 3}
   beatSeconds: 0.5
+  specialMeterMax: 7
+  specialDamage: 3
+  specialButton: {fileID: 0}
+  specialMeterText: {fileID: 0}
 --- !u!4 &1866749893
 Transform:
   m_ObjectHideFlags: 0
@@ -1629,7 +1635,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -278, y: 93}
+  m_AnchoredPosition: {x: -278, y: 97}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1928446536
@@ -1743,7 +1749,7 @@ GameObject:
   - component: {fileID: 2021641876}
   - component: {fileID: 2021641877}
   m_Layer: 5
-  m_Name: CadenceText
+  m_Name: PlayerMove
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1901,7 +1907,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 288, y: 91}
+  m_AnchoredPosition: {x: 288, y: 97}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2068754184

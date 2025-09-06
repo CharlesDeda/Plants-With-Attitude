@@ -101,12 +101,6 @@ public class BattleManager : MonoBehaviour
     public void OnWaterPressed() { if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Water)); }
     public void OnSoilPressed()  { if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Soil)); }
 
-    public void OnSpecialPressed()
-    {
-        if (specialMeter < specialMeterMax) return;
-        if (TryLockInput()) StartCoroutine(RoundWithCountdownSpecial());
-    }
-
     void SetButtonsInteractable(bool interactable)
     {
         if (sunButton)   sunButton.interactable = interactable;
