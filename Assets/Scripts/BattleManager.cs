@@ -68,8 +68,7 @@ public class BattleManager : MonoBehaviour
     public int specialMeterMax = 7;
     public int specialDamage = 3;
     public Button specialButton;
-    public TMP_Text specialMeterText;
-
+    public Slider specialMeterBar;
     private int specialMeter = 0;
     private int specialHitStreak = 0;
 
@@ -77,17 +76,38 @@ public class BattleManager : MonoBehaviour
     private const float specialIncreasePerHit = 0.10f;
     private const float specialMaxChance = 0.95f;
 
+    [Header("Special Visuals (optional)")]
+    public Image specialBarFill;
+    public Color readyColor = Color.yellow;
+    public Color buildingColor = Color.white;
+
+    [Header("Screen Shake")]
+    public RectTransform uiRootToShake;
+    public Transform cameraToShake;
+    public float specialShakeDuration = 1.5f;
+    public float specialShakeMagnitude = 30f;
 
     void Start()
-    {
-        sunButton.onClick.AddListener(OnSunPressed);
-        waterButton.onClick.AddListener(OnWaterPressed);
-        soilButton.onClick.AddListener(OnSoilPressed);
-        if (specialButton) specialButton.onClick.AddListener(OnSpecialPressed);
+{
+    sunButton.onClick.AddListener(OnSunPressed);
+    waterButton.onClick.AddListener(OnWaterPressed);
+    soilButton.onClick.AddListener(OnSoilPressed);
+    if (specialButton) specialButton.onClick.AddListener(OnSpecialPressed);
 
-        StartNewCycle();
-        UpdateSpecialUI();
+    if (specialMeterBar) 
+    {
+        specialMeterBar.wholeNumbers = true;
+        specialMeterBar.minValue = 0;
+        specialMeterBar.maxValue = specialMeterMax;
+        specialMeterBar.interactable = false;
+        specialMeterBar.handleRect = null;
+        specialMeterBar.direction = Slider.Direction.LeftToRight;
     }
+
+    StartNewCycle();
+    UpdateSpecialUI();
+    if (!cameraToShake && Camera.main) cameraToShake = Camera.main.transform;
+}
 
    bool TryLockInput()
     {
@@ -126,7 +146,6 @@ public class BattleManager : MonoBehaviour
         UpdateSpecialUI();
     }
 
-
     void SpawnNextEnemy()
     {
         if (normalsRemainingInCycle > 0)
@@ -144,22 +163,28 @@ public class BattleManager : MonoBehaviour
     }
 
     float CurrentSpecialChance()
-{
-    float c = specialBaseChance + specialIncreasePerHit * specialHitStreak;
-    return Mathf.Min(c, specialMaxChance);
-}
+    {
+        float c = specialBaseChance + specialIncreasePerHit * specialHitStreak;
+        return Mathf.Min(c, specialMaxChance);
+    }
 
     void UpdateSpecialUI()
     {
-        if (specialMeterText)
+        if (specialMeterBar)
         {
-            int pct = Mathf.RoundToInt(CurrentSpecialChance() * 100f);
-            string state = specialMeter >= specialMeterMax ? "Ready" : "Building";
-            specialMeterText.text = $"Special: {specialMeter}/{specialMeterMax} • {state} • {pct}%";
+            specialMeterBar.maxValue = specialMeterMax;
+            specialMeterBar.value = specialMeter;
+        }
+
+        if (specialBarFill)
+        {
+            specialBarFill.color = (specialMeter >= specialMeterMax) ? readyColor : buildingColor;
         }
 
         if (specialButton && !inputLocked)
+        {
             specialButton.interactable = specialMeter >= specialMeterMax;
+        }
     }
 
     void IncrementSpecialMeter(int amt = 1)
@@ -260,22 +285,25 @@ public class BattleManager : MonoBehaviour
             return;
         }
 
-        if (currentEnemy.Health <= 0)
+        if (currentEnemy != null && currentEnemy.Health <= 0)
         {
             if (currentEnemy.Type == EnemyType.Normal)
             {
+                playerHealth = playerMaxHealth;
+
                 normalsRemainingInCycle--;
                 if (normalsRemainingInCycle > 0)
                 {
-                    SpawnNextEnemy();
+                    SpawnNextEnemy(); 
                 }
                 else
                 {
                     SpawnNextEnemy(); 
                 }
             }
-            else 
+            else
             {
+
                 cycleNumber++;
                 StartNewCycle();
             }
@@ -283,6 +311,7 @@ public class BattleManager : MonoBehaviour
 
         RefreshUI();
     }
+
 
     void RefreshUI()
     {
@@ -336,7 +365,6 @@ public class BattleManager : MonoBehaviour
         if (currentEnemy == null) yield break;
 
         Move enemyMove = GetEnemyMove(currentEnemy.Type);
-
         if (playerCadenceText) playerCadenceText.text = "";
         if (enemyCadenceText)  enemyCadenceText.text  = "";
 
@@ -350,20 +378,17 @@ public class BattleManager : MonoBehaviour
         if (playerCadenceText) playerCadenceText.text = "Special!";
         if (enemyCadenceText)  enemyCadenceText.text  = $"{MoveToText(enemyMove)}!";
         yield return new WaitForSeconds(beatSeconds);
-
         float chance = CurrentSpecialChance();
         bool hit = Random.value < chance;
 
         ConsumeSpecialMeter();
 
-        if (hit)
-        {
+        if (hit) {
             specialHitStreak++;
             currentEnemy.Health = Mathf.Max(0, currentEnemy.Health - specialDamage);
             if (enemyHpText) StartCoroutine(ShakeRect(enemyHpText.rectTransform, shakeDuration, shakeMagnitude));
-        }
-        else
-        {
+            StartCoroutine(ShakeScreen(specialShakeDuration, specialShakeMagnitude));
+        } else {
             specialHitStreak = 0;
         }
 
@@ -374,8 +399,6 @@ public class BattleManager : MonoBehaviour
         inputLocked = false;
         SetButtonsInteractable(true);
     }
-
-
 
     System.Collections.IEnumerator ShakeRect(RectTransform target, float duration, float magnitude)
     {
@@ -397,4 +420,30 @@ public class BattleManager : MonoBehaviour
         target.anchoredPosition = original;
     }
 
+    System.Collections.IEnumerator ShakeScreen(float duration, float magnitude)
+    {
+        Vector3 uiOrig = Vector3.zero;
+        Vector3 camOrig = Vector3.zero;
+
+        if (uiRootToShake) uiOrig = uiRootToShake.localPosition;
+        if (cameraToShake) camOrig = cameraToShake.localPosition;
+
+        float t = 0f;
+        while (t < duration)
+        {
+            Vector2 jitter = Random.insideUnitCircle * magnitude;
+
+            if (uiRootToShake)
+                uiRootToShake.localPosition = uiOrig + new Vector3(jitter.x, jitter.y, 0f);
+
+            if (cameraToShake)
+                cameraToShake.localPosition = camOrig + new Vector3(jitter.x, jitter.y, 0f) * 0.02f; // tweak
+
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        if (uiRootToShake) uiRootToShake.localPosition = uiOrig;
+        if (cameraToShake) cameraToShake.localPosition = camOrig;
+    }
 }
