@@ -93,7 +93,7 @@ public class BattleManager : MonoBehaviour
     [Header("Special Visuals (optional)")]
     public Image specialBarFill;
     public Color readyColor = Color.yellow;
-    public Color buildingColor = Color.white;
+    public Color buildingColor = new Color(0f, 1f, 0f); 
 
     [Header("Screen Shake")]
     public RectTransform uiRootToShake;
