@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
     }
 
     public int playerHealth = 10;
+    public int maxHealth = 10;
     public int plantHealth = 5;
     public int plantBossHealth = 10;
 
