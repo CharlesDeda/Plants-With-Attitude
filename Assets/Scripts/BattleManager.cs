@@ -114,6 +114,8 @@ public class BattleManager : MonoBehaviour
     public TMP_Text enemyStatusText;
     public TMP_Text playerStatusText;
 
+    public Animator animator;
+
     void Start()
     {
         sunButton.onClick.AddListener(OnSunPressed);
@@ -324,7 +326,7 @@ void ShuffleList<T>(List<T> list)
         if (playerStatusText) playerStatusText.text = BuildPlayerStatusText();
     }
 
-  void OnPlayerMove(Move playerMove)
+    void OnPlayerMove(Move playerMove)
     {
         StartCoroutine(RoundWithCountdown(playerMove));
     }
@@ -333,10 +335,11 @@ void ShuffleList<T>(List<T> list)
     {
         if (specialMeter < specialMeterMax) return;
         if (!TryLockInput()) return;
+        animator.SetBool("isSpecialing", true);
         StartCoroutine(RoundWithCountdownSpecial());
     }
 
-  void ApplyOutcome(Move playerMove, Move enemyMove)
+    void ApplyOutcome(Move playerMove, Move enemyMove)
     {
         int outcome = Resolve(playerMove, enemyMove);
 
@@ -489,6 +492,9 @@ Move GetEnemyMove(EnemyType type)
         if (enemyHpText) enemyHpText.text = currentEnemy != null
             ? $"Enemy HP: {currentEnemy.Health}/{currentEnemy.MaxHealth}"
             : $"Enemy HP: -";
+        animator.SetBool("isAttacking", false);
+        animator.SetBool("isSpecialing", false);
+
         RefreshStatusUI();
     }
 
@@ -507,6 +513,7 @@ Move GetEnemyMove(EnemyType type)
 
     System.Collections.IEnumerator RoundWithCountdown(Move playerMove)
     {
+        animator.SetBool("isAttacking", true);
         if (currentEnemy == null) yield break;
         if (playerSunLocked && playerMove != Move.Sun) playerSunLocked = false;
 
