@@ -7,6 +7,8 @@ using System.Collections.Generic;
 public enum Move { Sun, Water, Soil }
 public enum EnemyType { Normal, Boss }
 public enum BossKind { Sun, Water, Soil, Final }
+enum PostDefeatAction { SpawnNextEnemy, StartNewCycle }
+
 
 [System.Serializable]
 public class Enemy
@@ -38,6 +40,16 @@ public class BattleManager : MonoBehaviour
     public int bossHealth = 10;
     public int bossDamage = 1;
 
+    [Header("Enemy Slide")]
+    public float enemySlideDistance = 800f;
+    public float enemySlideDuration = 0.35f;
+    public TMP_Text enemyQuipText;
+
+    [Header("Quips")]
+    [Tooltip("1-in-N chance the enemy taunts after a round")]
+    public int quipOneInN = 2;
+    public float quipDuration = 1.5f;
+
     [Header("FX")]
     public float shakeDuration = 1.2f;
     public float shakeMagnitude = 12f;
@@ -53,13 +65,13 @@ public class BattleManager : MonoBehaviour
     public TMP_Text playerCadenceText;
     public TMP_Text enemyCadenceText;
 
-    public Image enemyImage; 
+    public Image enemyImage;
     public Sprite normalEnemySprite;
     public Sprite bossEnemySprite;
 
     private Enemy currentEnemy;
     private int normalsRemainingInCycle;
-    private int cycleNumber = 1; 
+    private int cycleNumber = 1;
 
     [Header("Timing")]
     public float beatSeconds = 0.5f;
@@ -105,11 +117,11 @@ public class BattleManager : MonoBehaviour
 
     private bool enemySoaked = false;
     private bool enemySunLocked = false;
-    private int  enemyBurnTurns = 0;
+    private int enemyBurnTurns = 0;
 
     private bool playerSoaked = false;
     private bool playerSunLocked = false;
-    private int  playerBurnTurns = 0;
+    private int playerBurnTurns = 0;
 
     public TMP_Text enemyStatusText;
     public TMP_Text playerStatusText;
@@ -123,7 +135,7 @@ public class BattleManager : MonoBehaviour
         soilButton.onClick.AddListener(OnSoilPressed);
         if (specialButton) specialButton.onClick.AddListener(OnSpecialPressed);
 
-        if (specialMeterBar) 
+        if (specialMeterBar)
         {
             specialMeterBar.wholeNumbers = true;
             specialMeterBar.minValue = 0;
@@ -133,14 +145,14 @@ public class BattleManager : MonoBehaviour
             specialMeterBar.direction = Slider.Direction.LeftToRight;
         }
 
-        StartNewSet(); 
+        StartNewSet();
         StartNewCycle();
         UpdateSpecialUI();
         if (!cameraToShake && Camera.main) cameraToShake = Camera.main.transform;
 
     }
 
-   bool TryLockInput()
+    bool TryLockInput()
     {
         if (inputLocked) return false;
         inputLocked = true;
@@ -159,15 +171,48 @@ public class BattleManager : MonoBehaviour
         cycleNumber = 1; // show “Wave 1”, etc., for the new set
     }
 
-void ShuffleList<T>(List<T> list)
-{
-    for (int i = 0; i < list.Count; i++)
+    void ShuffleList<T>(List<T> list)
     {
-        int j = Random.Range(i, list.Count);
-        (list[i], list[j]) = (list[j], list[i]);
+        for (int i = 0; i < list.Count; i++)
+        {
+            int j = Random.Range(i, list.Count);
+            (list[i], list[j]) = (list[j], list[i]);
+        }
     }
-}
 
+    string RandomPlantTaunt()
+    {
+        string[] lines = {
+            "You’re about to get MULCHED!",
+            "Photosynthesize this, punk.",
+            "I’m ROOTIN for your demise!",
+            "I'm gonna SOIL your plans!",
+            "You're all BARK and no bite!",
+            "I'll chlory-fill you with holes!"
+        };
+        return lines[Random.Range(0, lines.Length)];
+    }
+    void ShowEnemyTaunt(float seconds = 1.5f)
+    {
+        var t = enemyQuipText ? enemyQuipText : enemyCadenceText;
+        if (!t) return;
+        t.text = RandomPlantTaunt();
+        StartCoroutine(ClearTextAfterDelay(t, seconds));
+    }
+
+    System.Collections.IEnumerator ClearTextAfterDelay(TMP_Text t, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (t) t.text = "";
+    }
+    void MaybeQuip()
+    {
+        if (currentEnemy != null && currentEnemy.Health > 0 && playerHealth > 0)
+        {
+            if (Random.Range(1, 2) == 1)
+                ShowEnemyTaunt(quipDuration);
+        }
+    }
     string BossLabel(BossKind k) =>
         k == BossKind.Sun ? "SUN" :
         k == BossKind.Water ? "WATER" :
@@ -175,8 +220,8 @@ void ShuffleList<T>(List<T> list)
         "FINAL";
 
     bool MoveMatchesBoss(Move m, BossKind k) =>
-        (k == BossKind.Sun  && m == Move.Sun)  ||
-        (k == BossKind.Water&& m == Move.Water)||
+        (k == BossKind.Sun && m == Move.Sun) ||
+        (k == BossKind.Water && m == Move.Water) ||
         (k == BossKind.Soil && m == Move.Soil);
 
     public void OnSunPressed()
@@ -190,14 +235,14 @@ void ShuffleList<T>(List<T> list)
     }
 
     public void OnWaterPressed() { if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Water)); }
-    public void OnSoilPressed()  { if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Soil)); }
+    public void OnSoilPressed() { if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Soil)); }
 
     void SetButtonsInteractable(bool interactable)
     {
-        if (sunButton)      sunButton.interactable   = interactable && !playerSunLocked;
-        if (waterButton)    waterButton.interactable = interactable;
-        if (soilButton)     soilButton.interactable  = interactable;
-        if (specialButton)  specialButton.interactable = interactable && (specialMeter >= specialMeterMax);
+        if (sunButton) sunButton.interactable = interactable && !playerSunLocked;
+        if (waterButton) waterButton.interactable = interactable;
+        if (soilButton) soilButton.interactable = interactable;
+        if (specialButton) specialButton.interactable = interactable && (specialMeter >= specialMeterMax);
     }
 
     void StartNewCycle()
@@ -206,7 +251,7 @@ void ShuffleList<T>(List<T> list)
         playerHealth = playerMaxHealth;
 
         if (playerCadenceText) playerCadenceText.text = "";
-        if (enemyCadenceText)  enemyCadenceText.text  = "";
+        if (enemyCadenceText) enemyCadenceText.text = "";
         if (waveText) waveText.text = $"Wave {cycleNumber} (Set {setNumber})";
 
         inputLocked = false;
@@ -218,7 +263,7 @@ void ShuffleList<T>(List<T> list)
     }
 
 
-   void SpawnNextEnemy()
+    void SpawnNextEnemy()
     {
         enemySoaked = false; enemySunLocked = false; enemyBurnTurns = 0;
         playerSoaked = false; playerSunLocked = false; playerBurnTurns = 0;
@@ -306,8 +351,8 @@ void ShuffleList<T>(List<T> list)
     {
         List<string> l = new List<string>();
         if (enemyBurnTurns > 0) l.Add($"Burning({enemyBurnTurns})");
-        if (enemySoaked)        l.Add("Soaked");
-        if (enemySunLocked)     l.Add("Rooted");
+        if (enemySoaked) l.Add("Soaked");
+        if (enemySunLocked) l.Add("Rooted");
         return l.Count > 0 ? string.Join(" • ", l) : "";
     }
 
@@ -315,14 +360,14 @@ void ShuffleList<T>(List<T> list)
     {
         List<string> l = new List<string>();
         if (playerBurnTurns > 0) l.Add($"Burning({playerBurnTurns})");
-        if (playerSoaked)        l.Add("Soaked");
-        if (playerSunLocked)     l.Add("Rooted");
+        if (playerSoaked) l.Add("Soaked");
+        if (playerSunLocked) l.Add("Rooted");
         return l.Count > 0 ? string.Join(" • ", l) : "";
     }
 
     void RefreshStatusUI()
     {
-        if (enemyStatusText)  enemyStatusText.text  = BuildEnemyStatusText();
+        if (enemyStatusText) enemyStatusText.text = BuildEnemyStatusText();
         if (playerStatusText) playerStatusText.text = BuildPlayerStatusText();
     }
 
@@ -331,7 +376,7 @@ void ShuffleList<T>(List<T> list)
         StartCoroutine(RoundWithCountdown(playerMove));
     }
 
-        public void OnSpecialPressed()
+    public void OnSpecialPressed()
     {
         if (specialMeter < specialMeterMax) return;
         if (!TryLockInput()) return;
@@ -357,8 +402,8 @@ void ShuffleList<T>(List<T> list)
             if (enemyHpText) StartCoroutine(ShakeRect(enemyHpText.rectTransform, shakeDuration, shakeMagnitude));
 
             if (unlockSoak && playerMove == Move.Water) enemySoaked = true;
-            if (unlockRoot && playerMove == Move.Soil)  enemySunLocked = true;
-            if (unlockBurn && playerMove == Move.Sun)   enemyBurnTurns = 2;
+            if (unlockRoot && playerMove == Move.Soil) enemySunLocked = true;
+            if (unlockBurn && playerMove == Move.Sun) enemyBurnTurns = 2;
         }
         else if (outcome < 0)
         {
@@ -375,8 +420,8 @@ void ShuffleList<T>(List<T> list)
                 if (canInflictThisMove)
                 {
                     if (enemyMove == Move.Water) playerSoaked = true;
-                    if (enemyMove == Move.Soil)  playerSunLocked = true;
-                    if (enemyMove == Move.Sun)   playerBurnTurns = 2;
+                    if (enemyMove == Move.Soil) playerSunLocked = true;
+                    if (enemyMove == Move.Sun) playerBurnTurns = 2;
                 }
             }
 
@@ -385,12 +430,18 @@ void ShuffleList<T>(List<T> list)
         }
 
         if (enemyBurnTurns > 0) { currentEnemy.Health = Mathf.Max(0, currentEnemy.Health - 1); enemyBurnTurns--; }
-        if (playerBurnTurns > 0) { playerHealth     = Mathf.Max(0, playerHealth     - 1); playerBurnTurns--; }
+        if (playerBurnTurns > 0) { playerHealth = Mathf.Max(0, playerHealth - 1); playerBurnTurns--; }
 
         IncrementSpecialMeter(1);
 
         RefreshUI();
         RefreshStatusUI();
+        bool enemyDeadNow  = (currentEnemy != null && currentEnemy.Health <= 0);
+        bool playerDeadNow = (playerHealth <= 0);
+        if (!enemyDeadNow && !playerDeadNow)
+        {
+            MaybeQuip();
+        }
         CheckRoundOver();
     }
 
@@ -398,19 +449,19 @@ void ShuffleList<T>(List<T> list)
     {
         switch (m)
         {
-            case Move.Sun:   return "Sun";
+            case Move.Sun: return "Sun";
             case Move.Water: return "Water";
-            case Move.Soil:  return "Soil";
-            default:         return m.ToString();
+            case Move.Soil: return "Soil";
+            default: return m.ToString();
         }
     }
 
 
-    public void OnSun()   => OnPlayerMove(Move.Sun);
+    public void OnSun() => OnPlayerMove(Move.Sun);
     public void OnWater() => OnPlayerMove(Move.Water);
-    public void OnSoil()  => OnPlayerMove(Move.Soil);  
+    public void OnSoil() => OnPlayerMove(Move.Soil);
 
-Move GetEnemyMove(EnemyType type)
+    Move GetEnemyMove(EnemyType type)
     {
         if (enemySunLocked)
         {
@@ -427,64 +478,62 @@ Move GetEnemyMove(EnemyType type)
 
         bool playerWins =
             (p == Move.Soil && e == Move.Sun) ||
-            (p == Move.Sun  && e == Move.Water) ||
+            (p == Move.Sun && e == Move.Water) ||
             (p == Move.Water && e == Move.Soil);
 
         return playerWins ? 1 : -1;
     }
 
     void CheckRoundOver()
-{
-    if (playerHealth <= 0)
     {
-        // On player death: reset set & specials
-        specialMeter = 0;
-        specialHitStreak = 0;
-        UpdateSpecialUI();
-
-        setNumber = 1;
-        currentHpScale = 1f;
-        StartNewSet();
-
-        StartNewCycle();
-        return;
-    }
-
-    if (currentEnemy != null && currentEnemy.Health <= 0)
-    {
-        if (currentEnemy.Type == EnemyType.Normal)
+        if (playerHealth <= 0)
         {
-            playerHealth = playerMaxHealth;
+            specialMeter = 0;
+            specialHitStreak = 0;
+            UpdateSpecialUI();
 
-            normalsRemainingInCycle--;
-            if (normalsRemainingInCycle > 0) SpawnNextEnemy();
-            else                             SpawnNextEnemy(); 
+            setNumber = 1;
+            currentHpScale = 1f;
+            StartNewSet();
+
+            StartNewCycle();
+            return;
         }
-        else 
-        {
-            if (!bossThisCycleIsFinal)
-            {
-                if (currentBossKind == BossKind.Sun)   unlockBurn = true;
-                if (currentBossKind == BossKind.Water) unlockSoak = true;
-                if (currentBossKind == BossKind.Soil)  unlockRoot = true;
 
-                pendingBosses.RemoveAt(0);
+        if (currentEnemy != null && currentEnemy.Health <= 0)
+        {
+            if (currentEnemy.Type == EnemyType.Normal)
+            {
+                playerHealth = playerMaxHealth;
+                normalsRemainingInCycle--;
+
+                StartCoroutine(EnemySlideTransition(PostDefeatAction.SpawnNextEnemy));
+                return;
             }
             else
             {
-                setNumber++;
-                currentHpScale *= hpScalePerSet;
-                StartNewSet();
+                if (!bossThisCycleIsFinal)
+                {
+                    if (currentBossKind == BossKind.Sun)   unlockBurn = true;
+                    if (currentBossKind == BossKind.Water) unlockSoak = true;
+                    if (currentBossKind == BossKind.Soil)  unlockRoot = true;
+                    pendingBosses.RemoveAt(0);
+                }
+                else
+                {
+                    setNumber++;
+                    currentHpScale *= hpScalePerSet;
+                    StartNewSet();
+                }
+
+                cycleNumber++;
+                StartCoroutine(EnemySlideTransition(PostDefeatAction.StartNewCycle));
+                return;
             }
-
-            cycleNumber++;
-            StartNewCycle();
         }
+        RefreshUI();
+        RefreshStatusUI();
     }
-
-    RefreshUI();
-    RefreshStatusUI();
-}
 
     void RefreshUI()
     {
@@ -520,17 +569,17 @@ Move GetEnemyMove(EnemyType type)
         Move enemyMove = GetEnemyMove(currentEnemy.Type);
 
         if (playerCadenceText) playerCadenceText.text = "";
-        if (enemyCadenceText)  enemyCadenceText.text  = "";
+        if (enemyCadenceText) enemyCadenceText.text = "";
 
         foreach (var word in cadenceWords)
         {
             if (playerCadenceText) playerCadenceText.text = word;
-            if (enemyCadenceText)  enemyCadenceText.text  = word;
+            if (enemyCadenceText) enemyCadenceText.text = word;
             yield return new WaitForSeconds(beatSeconds);
         }
 
         if (playerCadenceText) playerCadenceText.text = $"{MoveToText(playerMove)}!";
-        if (enemyCadenceText)  enemyCadenceText.text  = $"{MoveToText(enemyMove)}!";
+        if (enemyCadenceText) enemyCadenceText.text = $"{MoveToText(enemyMove)}!";
         yield return new WaitForSeconds(beatSeconds);
 
         ApplyOutcome(playerMove, enemyMove);
@@ -545,29 +594,33 @@ Move GetEnemyMove(EnemyType type)
 
         Move enemyMove = GetEnemyMove(currentEnemy.Type);
         if (playerCadenceText) playerCadenceText.text = "";
-        if (enemyCadenceText)  enemyCadenceText.text  = "";
+        if (enemyCadenceText) enemyCadenceText.text = "";
 
         foreach (var word in cadenceWords)
         {
             if (playerCadenceText) playerCadenceText.text = word;
-            if (enemyCadenceText)  enemyCadenceText.text  = word;
+            if (enemyCadenceText) enemyCadenceText.text = word;
             yield return new WaitForSeconds(beatSeconds);
         }
 
         if (playerCadenceText) playerCadenceText.text = "Special!";
-        if (enemyCadenceText)  enemyCadenceText.text  = $"{MoveToText(enemyMove)}!";
+        if (enemyCadenceText) enemyCadenceText.text = $"{MoveToText(enemyMove)}!";
         yield return new WaitForSeconds(beatSeconds);
         float chance = CurrentSpecialChance();
-        bool hit = Random.value < chance;
+        bool hit = true;
+        //  Random.value < chance;
 
         ConsumeSpecialMeter();
 
-        if (hit) {
+        if (hit)
+        {
             specialHitStreak++;
             currentEnemy.Health = Mathf.Max(0, currentEnemy.Health - specialDamage);
             if (enemyHpText) StartCoroutine(ShakeRect(enemyHpText.rectTransform, shakeDuration, shakeMagnitude));
             StartCoroutine(ShakeScreen(specialShakeDuration, specialShakeMagnitude));
-        } else {
+        }
+        else
+        {
             specialHitStreak = 0;
         }
 
@@ -589,7 +642,7 @@ Move GetEnemyMove(EnemyType type)
         while (elapsed < duration)
         {
             float offsetX = Random.Range(-1f, 1f) * magnitude;
-            float offsetY = Random.Range(-1f, 1f) * magnitude * 0.5f; 
+            float offsetY = Random.Range(-1f, 1f) * magnitude * 0.5f;
             target.anchoredPosition = original + new Vector2(offsetX, offsetY);
 
             elapsed += Time.deltaTime;
@@ -624,5 +677,43 @@ Move GetEnemyMove(EnemyType type)
 
         if (uiRootToShake) uiRootToShake.localPosition = uiOrig;
         if (cameraToShake) cameraToShake.localPosition = camOrig;
+    }
+    System.Collections.IEnumerator TweenAnchored(RectTransform rt, Vector2 from, Vector2 to, float dur)
+    {
+        float t = 0f;
+        while (t < dur)
+        {
+            float u = Mathf.SmoothStep(0f, 1f, t / dur);
+            rt.anchoredPosition = Vector2.LerpUnclamped(from, to, u);
+            t += Time.deltaTime;
+            yield return null;
+        }
+        rt.anchoredPosition = to;
+    }
+
+    System.Collections.IEnumerator EnemySlideTransition(PostDefeatAction action)
+    {
+        inputLocked = true;
+        SetButtonsInteractable(false);
+
+        RectTransform rt = enemyImage ? enemyImage.rectTransform : null;
+        Vector2 home = rt ? rt.anchoredPosition : Vector2.zero;
+        Vector2 offRight = home + new Vector2(enemySlideDistance, 0f);
+
+        if (rt) yield return StartCoroutine(TweenAnchored(rt, home, offRight, enemySlideDuration));
+
+        if (action == PostDefeatAction.StartNewCycle) StartNewCycle();
+        else                                          SpawnNextEnemy();
+
+        if (rt)
+        {
+            Vector2 offLeft = home - new Vector2(enemySlideDistance, 0f);
+            rt.anchoredPosition = offLeft;
+
+            yield return StartCoroutine(TweenAnchored(rt, offLeft, home, enemySlideDuration));
+        }
+
+        inputLocked = false;
+        SetButtonsInteractable(true);
     }
 }
