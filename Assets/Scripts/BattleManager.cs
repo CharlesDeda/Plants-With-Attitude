@@ -127,6 +127,10 @@ public class BattleManager : MonoBehaviour
     public TMP_Text playerStatusText;
 
     public Animator animator;
+    public Animator sunButtonAnimator;
+    public Animator waterButtonAnimator;
+
+    public Animator soilButtonAnimator;
 
     void Start()
     {
@@ -224,18 +228,30 @@ public class BattleManager : MonoBehaviour
         (k == BossKind.Water && m == Move.Water) ||
         (k == BossKind.Soil && m == Move.Soil);
 
-    public void OnSunPressed()
+public void OnSunPressed()
     {
         if (playerSunLocked)
         {
             if (playerCadenceText) playerCadenceText.text = "Rooted! Can't use Sun this turn.";
             return;
         }
+
+        // Play the press animation
+        sunButtonAnimator.Play("SunButtonPressed", -1, 0f);
+
         if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Sun));
     }
 
-    public void OnWaterPressed() { if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Water)); }
-    public void OnSoilPressed() { if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Soil)); }
+    public void OnWaterPressed()
+     {
+        waterButtonAnimator.Play("WaterButtonPressed", -1, 0f);
+        if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Water));
+     }
+    public void OnSoilPressed()
+     {
+        soilButtonAnimator.Play("SoilButtonPressed", -1, 0f);
+         if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Soil)); 
+    }
 
     void SetButtonsInteractable(bool interactable)
     {
