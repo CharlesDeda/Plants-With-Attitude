@@ -100,6 +100,20 @@ public class BattleManager : MonoBehaviour
     public float specialShakeDuration = 1.5f;
     public float specialShakeMagnitude = 30f;
 
+    [Header("Special Stacking")]
+    [Tooltip("Bonus damage if the enemy is Soaked when Special hits.")]
+    public int specialBonusVsSoaked = 2;
+
+    [Tooltip("Bonus damage if the enemy is Rooted when Special hits.")]
+    public int specialBonusVsRooted = 1;
+
+    [Tooltip("Bonus damage if the enemy is Burning when Special hits.")]
+    public int specialBonusVsBurning = 1;
+
+    [Tooltip("If true, Special consumes Soaked (like Sun does).")]
+    public bool specialConsumesSoaked = true;
+
+
     [Header("Boss Progression")]
     public int normalsPerCycle = 1;
     public float hpScalePerSet = 1.25f;
@@ -293,6 +307,28 @@ public void OnSunPressed()
         UpdateSpecialUI();
     }
 
+    int CalculateSpecialDamage()
+    {
+        int dmg = specialDamage;
+
+        if (enemySoaked)
+        {
+            dmg += specialBonusVsSoaked;
+            if (specialConsumesSoaked) enemySoaked = false;
+        }
+
+        if (enemySunLocked)
+        {
+            dmg += specialBonusVsRooted;
+        }
+
+        if (enemyBurnTurns > 0)
+        {
+            dmg += specialBonusVsBurning;
+        }
+
+        return dmg;
+    }
 
     void SpawnNextEnemy()
     {
@@ -763,10 +799,14 @@ public void OnSunPressed()
         if (hit)
         {
             specialHitStreak++;
-            currentEnemy.Health = Mathf.Max(0, currentEnemy.Health - specialDamage);
+
+            int dmg = CalculateSpecialDamage();
+            currentEnemy.Health = Mathf.Max(0, currentEnemy.Health - dmg);
+
             if (enemyHpText) StartCoroutine(ShakeRect(enemyHpText.rectTransform, shakeDuration, shakeMagnitude));
             StartCoroutine(ShakeScreen(specialShakeDuration, specialShakeMagnitude));
         }
+
         else
         {
             specialHitStreak = 0;
