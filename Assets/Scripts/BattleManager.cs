@@ -92,7 +92,7 @@ public class BattleManager : MonoBehaviour
     [Header("Special Visuals (optional)")]
     public Image specialBarFill;
     public Color readyColor = Color.yellow;
-    public Color buildingColor = new Color(0f, 1f, 0f); 
+    public Color buildingColor = Color.green;
 
     [Header("Screen Shake")]
     public RectTransform uiRootToShake;
@@ -129,6 +129,8 @@ public class BattleManager : MonoBehaviour
     public Animator sunButtonAnimator;
     public Animator waterButtonAnimator;
 
+    private int wave = 1;
+
     public Animator soilButtonAnimator;
 
     public Animator plantAnimationController;
@@ -153,6 +155,10 @@ public class BattleManager : MonoBehaviour
         StartNewSet();
         StartNewCycle();
         UpdateSpecialUI();
+        MakeNoDim(sunButton);
+        MakeNoDim(waterButton);
+        MakeNoDim(soilButton);
+        MakeNoDim(specialButton);
         if (!cameraToShake && Camera.main) cameraToShake = Camera.main.transform;
 
     }
@@ -173,7 +179,8 @@ public class BattleManager : MonoBehaviour
         pendingBosses.Add(BossKind.Soil);
         ShuffleList(pendingBosses);
         bossThisCycleIsFinal = false;
-        cycleNumber = 1; 
+        cycleNumber = 1;
+        wave = 1;
     }
 
     void ShuffleList<T>(List<T> list)
@@ -269,6 +276,14 @@ public void OnSunPressed()
 
         if (playerCadenceText) playerCadenceText.text = "";
         if (enemyCadenceText) enemyCadenceText.text = "";
+        plantAnimationController.SetBool("shouldTransitionTo1", true);
+        plantAnimationController.SetBool("shouldTransitionTo2", false);
+        plantAnimationController.SetBool("shouldTransitionTo3", false);
+        plantAnimationController.SetBool("shouldTransitionTo4", false);
+        plantAnimationController.SetBool("shouldTransitionTo5", false);
+        plantAnimationController.SetBool("shouldTransitionTo6", false);
+        plantAnimationController.SetBool("shouldTransitionTo7", false);
+        plantAnimationController.SetBool("shouldTransitionTo8", false);
 
         inputLocked = false;
         SetButtonsInteractable(true);
@@ -288,6 +303,61 @@ public void OnSunPressed()
         {
             int hp = Mathf.RoundToInt(normalHealth * currentHpScale);
             currentEnemy = new Enemy(EnemyType.Normal, hp);
+
+            switch (wave)
+            {
+                case 2:
+                    {
+                        plantAnimationController.SetBool("shouldTransitionTo1", false);
+                        plantAnimationController.SetBool("shouldTransitionTo2", false);
+                        plantAnimationController.SetBool("shouldTransitionTo3", true);
+                        plantAnimationController.SetBool("shouldTransitionTo4", false);
+                        plantAnimationController.SetBool("shouldTransitionTo5", false);
+                        plantAnimationController.SetBool("shouldTransitionTo6", false);
+                        plantAnimationController.SetBool("shouldTransitionTo7", false);
+                        plantAnimationController.SetBool("shouldTransitionTo8", false);
+                        break;
+                    }
+                case 3:
+                    {
+                        plantAnimationController.SetBool("shouldTransitionTo1", false);
+                        plantAnimationController.SetBool("shouldTransitionTo2", false);
+                        plantAnimationController.SetBool("shouldTransitionTo3", false);
+                        plantAnimationController.SetBool("shouldTransitionTo4", false);
+                        plantAnimationController.SetBool("shouldTransitionTo5", true);
+                        plantAnimationController.SetBool("shouldTransitionTo6", false);
+                        plantAnimationController.SetBool("shouldTransitionTo7", false);
+                        plantAnimationController.SetBool("shouldTransitionTo8", false);
+                        break;
+                    }
+                    case 4:
+                    {
+                        plantAnimationController.SetBool("shouldTransitionTo1", false);
+                        plantAnimationController.SetBool("shouldTransitionTo2", false);
+                        plantAnimationController.SetBool("shouldTransitionTo3", false);
+                        plantAnimationController.SetBool("shouldTransitionTo4", false);
+                        plantAnimationController.SetBool("shouldTransitionTo5", false);
+                        plantAnimationController.SetBool("shouldTransitionTo6", false);
+                        plantAnimationController.SetBool("shouldTransitionTo7", true);
+                        plantAnimationController.SetBool("shouldTransitionTo8", false);
+                        break;
+                    }
+                    case 5: {
+                        plantAnimationController.SetBool("shouldTransitionTo1", true);
+                        plantAnimationController.SetBool("shouldTransitionTo2", false);
+                        plantAnimationController.SetBool("shouldTransitionTo3", false);
+                        plantAnimationController.SetBool("shouldTransitionTo4", false);
+                        plantAnimationController.SetBool("shouldTransitionTo5", false);
+                        plantAnimationController.SetBool("shouldTransitionTo6", false);
+                        plantAnimationController.SetBool("shouldTransitionTo7", false);
+                        plantAnimationController.SetBool("shouldTransitionTo8", false);
+                        break;
+                    }
+                default:
+                    {
+                        break;
+                }
+            }   
         }
         else
         {
@@ -307,6 +377,61 @@ public void OnSunPressed()
             float mult = bossThisCycleIsFinal ? finalBossHpMultiplier : 1f;
             int hp = Mathf.RoundToInt(bossHealth * currentHpScale * mult);
             currentEnemy = new Enemy(EnemyType.Boss, hp);
+            switch (wave)
+            {
+                case 1:
+                    {
+                        plantAnimationController.SetBool("shouldTransitionTo1", false);
+                        plantAnimationController.SetBool("shouldTransitionTo2", true);
+                        plantAnimationController.SetBool("shouldTransitionTo3", false);
+                        plantAnimationController.SetBool("shouldTransitionTo4", false);
+                        plantAnimationController.SetBool("shouldTransitionTo5", false);
+                        plantAnimationController.SetBool("shouldTransitionTo6", false);
+                        plantAnimationController.SetBool("shouldTransitionTo7", false);
+                        plantAnimationController.SetBool("shouldTransitionTo8", false);
+                        break;
+                    }
+                case 2:
+                    {
+                        plantAnimationController.SetBool("shouldTransitionTo1", false);
+                        plantAnimationController.SetBool("shouldTransitionTo2", false);
+                        plantAnimationController.SetBool("shouldTransitionTo3", false);
+                        plantAnimationController.SetBool("shouldTransitionTo4", true);
+                        plantAnimationController.SetBool("shouldTransitionTo5", false);
+                        plantAnimationController.SetBool("shouldTransitionTo6", false);
+                        plantAnimationController.SetBool("shouldTransitionTo7", false);
+                        plantAnimationController.SetBool("shouldTransitionTo8", false);
+                        break;
+                    }
+                    case 3:
+                    {
+                        plantAnimationController.SetBool("shouldTransitionTo1", false);
+                        plantAnimationController.SetBool("shouldTransitionTo2", false);
+                        plantAnimationController.SetBool("shouldTransitionTo3", false);
+                        plantAnimationController.SetBool("shouldTransitionTo4", false);
+                        plantAnimationController.SetBool("shouldTransitionTo5", false);
+                        plantAnimationController.SetBool("shouldTransitionTo6", true);
+                        plantAnimationController.SetBool("shouldTransitionTo7", false);
+                        plantAnimationController.SetBool("shouldTransitionTo8", false);
+                        break;
+                    }
+                    case 4:
+                    {
+                        plantAnimationController.SetBool("shouldTransitionTo2", false);
+                        plantAnimationController.SetBool("shouldTransitionTo3", false);
+                        plantAnimationController.SetBool("shouldTransitionTo4", false);
+                        plantAnimationController.SetBool("shouldTransitionTo5", false);
+                        plantAnimationController.SetBool("shouldTransitionTo6", false);
+                        plantAnimationController.SetBool("shouldTransitionTo7", false);
+                        plantAnimationController.SetBool("shouldTransitionTo8", true);
+                        break;
+                    }
+                default:
+                    {
+                        break;
+                }
+            }
+            wave++; 
         }
 
         UpdateEnemyVisual();
@@ -535,46 +660,7 @@ public void OnSunPressed()
                 }
 
                 cycleNumber++;
-                if (currentEnemy.Type == EnemyType.Boss)
-                {
-                    switch (cycleNumber)
-                    {
-                        case 2:
-                            {
-                                plantAnimationController.SetBool("shouldTransitionTo2", true);
-                                break;
-                            }
-                        case 4:
-                            {
-                                plantAnimationController.SetBool("shouldTransitionTo4", true);
-                                break;
-                            }
-                        default:
-                            {
-                                break;
-                        }
-                    }
-                }
-                else
-                {
-                    switch (setNumber)
-                    {
-                        case 1:
-                            {
-                                plantAnimationController.SetBool("shouldTransitionTo2", true);
-                                break;
-                            }
-                        case 3:
-                            {
-                                plantAnimationController.SetBool("shouldTransitionTo5", true);
-                                break;
-                            }
-                        default:
-                            {
-                                break;
-                        }
-                    }
-                }
+                
                 StartCoroutine(EnemySlideTransition(PostDefeatAction.StartNewCycle));
                 return;
             }
@@ -635,6 +721,20 @@ public void OnSunPressed()
         inputLocked = false;
         SetButtonsInteractable(true);
     }
+
+    void MakeNoDim(Button b)
+    {
+        if (!b) return;
+        var cb = b.colors;
+        cb.disabledColor = cb.normalColor;
+        cb.fadeDuration = 0f;
+        b.colors = cb;
+
+        var ss = b.spriteState;
+        ss.disabledSprite = null;
+        b.spriteState = ss;
+    }
+
 
     System.Collections.IEnumerator RoundWithCountdownSpecial()
     {

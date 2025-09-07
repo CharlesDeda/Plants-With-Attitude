@@ -1,19 +1,19 @@
 fileFormatVersion: 2
-guid: 1db70442ba19b4fe4a52336010a83a04
+guid: 9d7fae34e8d184a42ae1a320a0a8f6cd
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 9035823383742510731
-    second: Plant3_Idle_front_0
+      213: 1581749641449800313
+    second: plantBoss3_0
   - first:
-      213: 4171454007344078360
-    second: Plant3_Idle_front_1
+      213: 2082604783353542053
+    second: plantBoss3_1
   - first:
-      213: -2741104541132958885
-    second: Plant3_Idle_front_2
+      213: 3611793177621274711
+    second: plantBoss3_2
   - first:
-      213: -7508232996905443283
-    second: Plant3_Idle_front_3
+      213: 8556471359960551852
+    second: plantBoss3_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -122,7 +122,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Plant3_Idle_front_0
+      name: plantBoss3_0
       rect:
         serializedVersion: 2
         x: 18
@@ -137,14 +137,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b86f3216e71b56d70800000000000000
-      internalID: 9035823383742510731
+      spriteID: 972873e1be083f510800000000000000
+      internalID: 1581749641449800313
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Plant3_Idle_front_1
+      name: plantBoss3_1
       rect:
         serializedVersion: 2
         x: 80
@@ -159,14 +159,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 81e9f90815bf3e930800000000000000
-      internalID: 4171454007344078360
+      spriteID: 5a5315f2406e6ec10800000000000000
+      internalID: 2082604783353542053
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Plant3_Idle_front_2
+      name: plantBoss3_2
       rect:
         serializedVersion: 2
         x: 144
@@ -181,14 +181,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b535f8d51f3a5f9d0800000000000000
-      internalID: -2741104541132958885
+      spriteID: 750ab4a42caaf1230800000000000000
+      internalID: 3611793177621274711
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Plant3_Idle_front_3
+      name: plantBoss3_3
       rect:
         serializedVersion: 2
         x: 208
@@ -203,8 +203,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d20a590aed56dc790800000000000000
-      internalID: -7508232996905443283
+      spriteID: ca190452e51beb670800000000000000
+      internalID: 8556471359960551852
       vertices: []
       indices: 
       edges: []
@@ -213,7 +213,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -223,10 +223,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Plant3_Idle_front_0: 9035823383742510731
-      Plant3_Idle_front_1: 4171454007344078360
-      Plant3_Idle_front_2: -2741104541132958885
-      Plant3_Idle_front_3: -7508232996905443283
+      plantBoss3_0: 1581749641449800313
+      plantBoss3_1: 2082604783353542053
+      plantBoss3_2: 3611793177621274711
+      plantBoss3_3: 8556471359960551852
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

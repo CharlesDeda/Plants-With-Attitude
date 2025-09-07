@@ -46,7 +46,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -122,89 +122,89 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Plant1_Idle_front_0
+      name: plant2_0
       rect:
         serializedVersion: 2
-        x: 16
-        y: 12
-        width: 31
-        height: 39
+        x: 0
+        y: 0
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 304a2172646de8310800000000000000
-      internalID: 1409299330205131779
+      spriteID: 2fc3b5608f44b4a34a19f0207d6b8058
+      internalID: -349862655
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Plant1_Idle_front_1
+      name: plant2_1
       rect:
         serializedVersion: 2
-        x: 81
-        y: 12
-        width: 29
-        height: 39
+        x: 64
+        y: 0
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 6f6ee02ef51a099e0800000000000000
-      internalID: -1616614833039415562
+      spriteID: 49ce8ceec39c14310a07ad922a2c2235
+      internalID: -216558790
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Plant1_Idle_front_2
+      name: plant2_2
       rect:
         serializedVersion: 2
-        x: 146
-        y: 12
-        width: 28
-        height: 39
+        x: 128
+        y: 0
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: c20d4cad6747ff130800000000000000
-      internalID: 3602726280744980524
+      spriteID: dbee7f3184faf4115bad0908e86a5ad3
+      internalID: -1793688698
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Plant1_Idle_front_3
+      name: plant2_3
       rect:
         serializedVersion: 2
-        x: 209
-        y: 12
-        width: 29
-        height: 39
+        x: 192
+        y: 0
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: ac262b09869ef8910800000000000000
-      internalID: 1841947407931302602
+      spriteID: 32a59fb50293e454e9f0c56b22312178
+      internalID: -1835867325
       vertices: []
       indices: 
       edges: []
@@ -213,7 +213,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: df0ba376ef23448c0b96296bee1efad3
     internalID: 0
     vertices: []
     indices: 
@@ -221,12 +221,14 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Plant1_Idle_front_0: 1409299330205131779
-      Plant1_Idle_front_1: -1616614833039415562
-      Plant1_Idle_front_2: 3602726280744980524
-      Plant1_Idle_front_3: 1841947407931302602
+      plant2_0: -349862655
+      plant2_1: -216558790
+      plant2_2: -1793688698
+      plant2_3: -1835867325
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

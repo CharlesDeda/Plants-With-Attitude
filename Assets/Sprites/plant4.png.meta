@@ -1,19 +1,19 @@
 fileFormatVersion: 2
-guid: 1db70442ba19b4fe4a52336010a83a04
+guid: 750233a7756f44486a31d76b823f62fd
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 9035823383742510731
-    second: Plant3_Idle_front_0
+      213: 6264059737549002558
+    second: plant4_0
   - first:
-      213: 4171454007344078360
-    second: Plant3_Idle_front_1
+      213: -6594607197230801196
+    second: plant4_1
   - first:
-      213: -2741104541132958885
-    second: Plant3_Idle_front_2
+      213: 716084185745068182
+    second: plant4_2
   - first:
-      213: -7508232996905443283
-    second: Plant3_Idle_front_3
+      213: -3573682212090618980
+    second: plant4_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -122,89 +122,89 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Plant3_Idle_front_0
+      name: plant4_0
       rect:
         serializedVersion: 2
-        x: 18
-        y: 12
-        width: 27
-        height: 39
+        x: 0
+        y: 0
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b86f3216e71b56d70800000000000000
-      internalID: 9035823383742510731
+      spriteID: e375f6494296ee650800000000000000
+      internalID: 6264059737549002558
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Plant3_Idle_front_1
+      name: plant4_1
       rect:
         serializedVersion: 2
-        x: 80
-        y: 12
-        width: 31
-        height: 39
+        x: 64
+        y: 0
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 81e9f90815bf3e930800000000000000
-      internalID: 4171454007344078360
+      spriteID: 4ded2df91bf3b74a0800000000000000
+      internalID: -6594607197230801196
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Plant3_Idle_front_2
+      name: plant4_2
       rect:
         serializedVersion: 2
-        x: 144
-        y: 12
-        width: 31
-        height: 38
+        x: 128
+        y: 0
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b535f8d51f3a5f9d0800000000000000
-      internalID: -2741104541132958885
+      spriteID: 6901c90e5ca00f900800000000000000
+      internalID: 716084185745068182
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Plant3_Idle_front_3
+      name: plant4_3
       rect:
         serializedVersion: 2
-        x: 208
-        y: 12
-        width: 31
-        height: 39
+        x: 192
+        y: 0
+        width: 64
+        height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d20a590aed56dc790800000000000000
-      internalID: -7508232996905443283
+      spriteID: c9bd43856fab76ec0800000000000000
+      internalID: -3573682212090618980
       vertices: []
       indices: 
       edges: []
@@ -213,7 +213,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: abaeaa206f2d746e9ac771afa1bb0053
     internalID: 0
     vertices: []
     indices: 
@@ -221,12 +221,14 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Plant3_Idle_front_0: 9035823383742510731
-      Plant3_Idle_front_1: 4171454007344078360
-      Plant3_Idle_front_2: -2741104541132958885
-      Plant3_Idle_front_3: -7508232996905443283
+      plant4_0: 6264059737549002558
+      plant4_1: -6594607197230801196
+      plant4_2: 716084185745068182
+      plant4_3: -3573682212090618980
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
