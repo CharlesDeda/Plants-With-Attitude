@@ -2729,6 +2729,10 @@ MonoBehaviour:
   cameraToShake: {fileID: 249767110}
   specialShakeDuration: 2.2
   specialShakeMagnitude: 30
+  specialBonusVsSoaked: 2
+  specialBonusVsRooted: 1
+  specialBonusVsBurning: 1
+  specialConsumesSoaked: 1
   normalsPerCycle: 1
   hpScalePerSet: 1.25
   finalBossHpMultiplier: 1.3
