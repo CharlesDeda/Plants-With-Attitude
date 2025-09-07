@@ -84,6 +84,7 @@ public class BattleManager : MonoBehaviour
     public Slider specialMeterBar;
     private int specialMeter = 0;
     private int specialHitStreak = 0;
+    private bool specialWasReady = false;
 
     private const float specialBaseChance = 0.30f;
     private const float specialIncreasePerHit = 0.10f;
@@ -139,14 +140,13 @@ public class BattleManager : MonoBehaviour
     public TMP_Text enemyStatusText;
     public TMP_Text playerStatusText;
 
+    private int wave = 1;
+
     public Animator animator;
     public Animator sunButtonAnimator;
     public Animator waterButtonAnimator;
-
-    private int wave = 1;
-
+    public Animator specialButtonAnimator;
     public Animator soilButtonAnimator;
-
     public Animator plantAnimationController;
 
     void Start()
@@ -489,15 +489,24 @@ public void OnSunPressed()
         }
 
         if (specialBarFill)
-        {
             specialBarFill.color = (specialMeter >= specialMeterMax) ? readyColor : buildingColor;
-        }
+
+        bool isReady = (specialMeter >= specialMeterMax);
 
         if (specialButton && !inputLocked)
+            specialButton.interactable = isReady;
+
+        if (specialButtonAnimator)
         {
-            specialButton.interactable = specialMeter >= specialMeterMax;
+            specialButtonAnimator.SetBool("IsReady", isReady);
+
+            if (isReady && !specialWasReady)
+                specialButtonAnimator.SetTrigger("ReadyOnce");
         }
+
+        specialWasReady = isReady;
     }
+
 
     void IncrementSpecialMeter(int amt = 1)
     {
@@ -549,6 +558,7 @@ public void OnSunPressed()
     {
         if (specialMeter < specialMeterMax) return;
         if (!TryLockInput()) return;
+        specialButtonAnimator.Play("SpecialButtonPressed", -1, 0f);
         animator.SetBool("isSpecialing", true);
         StartCoroutine(RoundWithCountdownSpecial());
     }
