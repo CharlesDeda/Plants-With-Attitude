@@ -2318,6 +2318,11 @@ MonoBehaviour:
   normalDamage: 1
   bossHealth: 10
   bossDamage: 1
+  enemySlideDistance: 800
+  enemySlideDuration: 0.35
+  enemyQuipText: {fileID: 0}
+  quipOneInN: 2
+  quipDuration: 1.5
   shakeDuration: 0.2
   shakeMagnitude: 12
   sunButton: {fileID: 1634128572}
