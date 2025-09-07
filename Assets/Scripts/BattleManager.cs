@@ -61,7 +61,6 @@ public class BattleManager : MonoBehaviour
 
     public TMP_Text playerHpText;
     public TMP_Text enemyHpText;
-    public TMP_Text waveText;
     public TMP_Text playerCadenceText;
     public TMP_Text enemyCadenceText;
 
@@ -132,6 +131,8 @@ public class BattleManager : MonoBehaviour
 
     public Animator soilButtonAnimator;
 
+    public Animator plantAnimationController;
+
     void Start()
     {
         sunButton.onClick.AddListener(OnSunPressed);
@@ -172,7 +173,7 @@ public class BattleManager : MonoBehaviour
         pendingBosses.Add(BossKind.Soil);
         ShuffleList(pendingBosses);
         bossThisCycleIsFinal = false;
-        cycleNumber = 1; // show “Wave 1”, etc., for the new set
+        cycleNumber = 1; 
     }
 
     void ShuffleList<T>(List<T> list)
@@ -268,7 +269,6 @@ public void OnSunPressed()
 
         if (playerCadenceText) playerCadenceText.text = "";
         if (enemyCadenceText) enemyCadenceText.text = "";
-        if (waveText) waveText.text = $"Wave {cycleNumber} (Set {setNumber})";
 
         inputLocked = false;
         SetButtonsInteractable(true);
@@ -288,7 +288,6 @@ public void OnSunPressed()
         {
             int hp = Mathf.RoundToInt(normalHealth * currentHpScale);
             currentEnemy = new Enemy(EnemyType.Normal, hp);
-            if (waveText) waveText.text = $"Wave {cycleNumber} • Grunt ({normalsRemainingInCycle} left)";
         }
         else
         {
@@ -308,13 +307,6 @@ public void OnSunPressed()
             float mult = bossThisCycleIsFinal ? finalBossHpMultiplier : 1f;
             int hp = Mathf.RoundToInt(bossHealth * currentHpScale * mult);
             currentEnemy = new Enemy(EnemyType.Boss, hp);
-
-            if (waveText)
-            {
-                waveText.text = bossThisCycleIsFinal
-                    ? $"Wave {cycleNumber} • FINAL BOSS"
-                    : $"Wave {cycleNumber} • BOSS: {BossLabel(currentBossKind)}";
-            }
         }
 
         UpdateEnemyVisual();
@@ -543,6 +535,46 @@ public void OnSunPressed()
                 }
 
                 cycleNumber++;
+                if (currentEnemy.Type == EnemyType.Boss)
+                {
+                    switch (cycleNumber)
+                    {
+                        case 2:
+                            {
+                                plantAnimationController.SetBool("shouldTransitionTo2", true);
+                                break;
+                            }
+                        case 4:
+                            {
+                                plantAnimationController.SetBool("shouldTransitionTo4", true);
+                                break;
+                            }
+                        default:
+                            {
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    switch (setNumber)
+                    {
+                        case 1:
+                            {
+                                plantAnimationController.SetBool("shouldTransitionTo2", true);
+                                break;
+                            }
+                        case 3:
+                            {
+                                plantAnimationController.SetBool("shouldTransitionTo5", true);
+                                break;
+                            }
+                        default:
+                            {
+                                break;
+                        }
+                    }
+                }
                 StartCoroutine(EnemySlideTransition(PostDefeatAction.StartNewCycle));
                 return;
             }
