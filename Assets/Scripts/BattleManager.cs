@@ -9,6 +9,14 @@ public enum EnemyType { Normal, Boss }
 public enum BossKind { Sun, Water, Soil, Final }
 enum PostDefeatAction { SpawnNextEnemy, StartNewCycle }
 
+[System.Serializable]
+public class BossVisual
+{
+    public BossKind kind;
+    public string displayName;
+    public Sprite bossSprite;
+    public RuntimeAnimatorController animator;
+}
 
 [System.Serializable]
 public class Enemy
@@ -45,6 +53,13 @@ public class BattleManager : MonoBehaviour
     public float enemySlideDuration = 0.35f;
     public TMP_Text enemyQuipText;
 
+    [Header("Visual Mappings")]
+    public Sprite normalEnemySpriteOverride;   
+    public RuntimeAnimatorController normalAnimator; 
+
+    public List<BossVisual> bossVisuals = new List<BossVisual>();
+
+
     [Header("Quips")]
     [Tooltip("1-in-N chance the enemy taunts after a round")]
     public int quipOneInN = 2;
@@ -73,6 +88,17 @@ public class BattleManager : MonoBehaviour
     private Enemy currentEnemy;
     private int normalsRemainingInCycle;
     private int cycleNumber = 1;
+
+    [Header("Audio")]
+    public AudioClip normalHitSfx; 
+    [Range(0f, 1f)] public float normalHitVolume = 0.9f;
+    [Range(0f, 0.3f)] public float normalHitPitchJitter = 0.03f;
+    public float normalHitPitch = 1.0f;
+    public AudioClip specialSfx;
+    [Range(0f, 1f)] public float specialSfxVolume = 0.9f;
+    [Range(0f, 0.3f)] public float specialSfxPitchJitter = 0.04f;
+    public float specialSfxPitch = 1.0f;
+    private AudioSource sfx;
 
     [Header("Timing")]
     public float beatSeconds = 0.5f;
@@ -167,6 +193,14 @@ public class BattleManager : MonoBehaviour
             specialMeterBar.handleRect = null;
             specialMeterBar.direction = Slider.Direction.LeftToRight;
         }
+        if (!sfx)
+        {
+            sfx = gameObject.AddComponent<AudioSource>();
+            sfx.playOnAwake = false;
+            sfx.spatialBlend = 0f;
+            sfx.loop = false;
+        }
+
 
         StartNewSet();
         StartNewCycle();
@@ -185,6 +219,14 @@ public class BattleManager : MonoBehaviour
         inputLocked = true;
         SetButtonsInteractable(false);
         return true;
+    }
+
+    void PlaySfx(AudioClip clip, float vol, float basePitch, float jitter)
+    {
+        if (!clip || !sfx) return;
+        float p = basePitch + Random.Range(-jitter, jitter);
+        sfx.pitch = Mathf.Clamp(p, 0.5f, 2f);
+        sfx.PlayOneShot(clip, vol);
     }
 
     void StartNewSet()
@@ -252,6 +294,45 @@ public class BattleManager : MonoBehaviour
         (k == BossKind.Sun && m == Move.Sun) ||
         (k == BossKind.Water && m == Move.Water) ||
         (k == BossKind.Soil && m == Move.Soil);
+
+            BossVisual GetBossVisual(BossKind kind)
+        {
+            foreach (var v in bossVisuals) if (v.kind == kind) return v;
+            return null;
+        }
+
+    void ApplyNormalVisuals()
+    {
+        if (enemyImage && normalEnemySpriteOverride)
+            enemyImage.sprite = normalEnemySpriteOverride;
+
+        if (plantAnimationController && normalAnimator)
+        {
+            plantAnimationController.runtimeAnimatorController = normalAnimator;
+            plantAnimationController.Rebind();
+            plantAnimationController.Update(0f);
+            plantAnimationController.Play("Idle", 0, 0f); // state must exist in the controller
+        }
+    }
+
+    void ApplyBossVisuals(BossKind kind)
+    {
+        var vis = GetBossVisual(kind);
+        if (vis == null) return;
+
+        if (enemyImage && vis.bossSprite)
+            enemyImage.sprite = vis.bossSprite;
+
+        if (plantAnimationController && vis.animator)
+        {
+            plantAnimationController.runtimeAnimatorController = vis.animator;
+            plantAnimationController.Rebind();
+            plantAnimationController.Update(0f);
+            plantAnimationController.Play("Idle", 0, 0f); // or your boss’ default state name
+        }
+
+        if (bossTitle) bossTitle.text = vis.displayName;
+    }
 
         void ShowBossTitle(BossKind kind)
         {
@@ -366,6 +447,7 @@ public class BattleManager : MonoBehaviour
         {
             int hp = Mathf.RoundToInt(normalHealth * currentHpScale);
             currentEnemy = new Enemy(EnemyType.Normal, hp);
+            ApplyNormalVisuals();
 
             switch (wave)
             {
@@ -440,10 +522,11 @@ public class BattleManager : MonoBehaviour
             float mult = bossThisCycleIsFinal ? finalBossHpMultiplier : 1f;
             int hp = Mathf.RoundToInt(bossHealth * currentHpScale * mult);
             currentEnemy = new Enemy(EnemyType.Boss, hp);
+            ApplyBossVisuals(currentBossKind);
             ShowBossTitle(currentBossKind);
             bossTitle.text = BossLabel(currentBossKind);
 
-            TriggerBossAnimation(currentBossKind);
+            // TriggerBossAnimation(currentBossKind);
 
             switch (wave)
             {
@@ -502,7 +585,7 @@ public class BattleManager : MonoBehaviour
             wave++; 
         }
 
-        UpdateEnemyVisual();
+        // UpdateEnemyVisual();
         RefreshUI();
     }
 
@@ -609,7 +692,10 @@ public class BattleManager : MonoBehaviour
             }
 
             currentEnemy.Health = Mathf.Max(0, currentEnemy.Health - dmg);
-            if (enemyHpText) StartCoroutine(ShakeRect(enemyHpText.rectTransform, shakeDuration, shakeMagnitude));
+            if (enemyHpText)
+            StartCoroutine(ShakeRect(
+            enemyHpText.rectTransform, shakeDuration, shakeMagnitude,
+            normalHitSfx, normalHitVolume, normalHitPitch, normalHitPitchJitter));
 
             if (unlockSoak && playerMove == Move.Water) enemySoaked = true;
             if (unlockRoot && playerMove == Move.Soil) enemySunLocked = true;
@@ -636,7 +722,10 @@ public class BattleManager : MonoBehaviour
             }
 
             playerHealth = Mathf.Max(0, playerHealth - dmg);
-            if (playerHpText) StartCoroutine(ShakeRect(playerHpText.rectTransform, shakeDuration, shakeMagnitude));
+            if (playerHpText)
+            StartCoroutine(ShakeRect(
+            playerHpText.rectTransform, shakeDuration, shakeMagnitude,
+            normalHitSfx, normalHitVolume, normalHitPitch, normalHitPitchJitter));
         }
 
         if (enemyBurnTurns > 0) { currentEnemy.Health = Mathf.Max(0, currentEnemy.Health - 1); enemyBurnTurns--; }
@@ -844,10 +933,16 @@ public class BattleManager : MonoBehaviour
             int dmg = CalculateSpecialDamage();
             currentEnemy.Health = Mathf.Max(0, currentEnemy.Health - dmg);
 
+            if (specialSfx && sfx)
+            {
+                float p = specialSfxPitch + Random.Range(-specialSfxPitchJitter, specialSfxPitchJitter);
+                sfx.pitch = Mathf.Clamp(p, 0.5f, 2f);
+                sfx.PlayOneShot(specialSfx, specialSfxVolume);
+            }
+
             if (enemyHpText) StartCoroutine(ShakeRect(enemyHpText.rectTransform, shakeDuration, shakeMagnitude));
             StartCoroutine(ShakeScreen(specialShakeDuration, specialShakeMagnitude));
         }
-
         else
         {
             specialHitStreak = 0;
@@ -861,9 +956,14 @@ public class BattleManager : MonoBehaviour
         SetButtonsInteractable(true);
     }
 
-    System.Collections.IEnumerator ShakeRect(RectTransform target, float duration, float magnitude)
+    System.Collections.IEnumerator ShakeRect(
+    RectTransform target, float duration, float magnitude,
+    AudioClip onShakeClip = null, float vol = 1f, float basePitch = 1f, float jitter = 0f)
     {
         if (target == null) yield break;
+
+        // 🔊 play once right as the shake starts
+        if (onShakeClip) PlaySfx(onShakeClip, vol, basePitch, jitter);
 
         Vector2 original = target.anchoredPosition;
         float elapsed = 0f;
@@ -881,8 +981,11 @@ public class BattleManager : MonoBehaviour
         target.anchoredPosition = original;
     }
 
+
     System.Collections.IEnumerator ShakeScreen(float duration, float magnitude)
     {
+        PlaySfx(specialSfx, specialSfxVolume, specialSfxPitch, specialSfxPitchJitter);
+
         Vector3 uiOrig = Vector3.zero;
         Vector3 camOrig = Vector3.zero;
 
@@ -898,7 +1001,7 @@ public class BattleManager : MonoBehaviour
                 uiRootToShake.localPosition = uiOrig + new Vector3(jitter.x, jitter.y, 0f);
 
             if (cameraToShake)
-                cameraToShake.localPosition = camOrig + new Vector3(jitter.x, jitter.y, 0f) * 0.02f; // tweak
+                cameraToShake.localPosition = camOrig + new Vector3(jitter.x, jitter.y, 0f) * 0.02f;
 
             t += Time.deltaTime;
             yield return null;
@@ -907,6 +1010,7 @@ public class BattleManager : MonoBehaviour
         if (uiRootToShake) uiRootToShake.localPosition = uiOrig;
         if (cameraToShake) cameraToShake.localPosition = camOrig;
     }
+
     System.Collections.IEnumerator TweenAnchored(RectTransform rt, Vector2 from, Vector2 to, float dur)
     {
         float t = 0f;
