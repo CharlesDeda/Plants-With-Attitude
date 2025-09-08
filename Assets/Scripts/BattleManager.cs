@@ -63,6 +63,8 @@ public class BattleManager : MonoBehaviour
     public TMP_Text enemyHpText;
     public TMP_Text playerCadenceText;
     public TMP_Text enemyCadenceText;
+    public TMP_Text bossAppearsText;
+    public TMP_Text bossTitle;
 
     public Image enemyImage;
     public Sprite normalEnemySprite;
@@ -218,6 +220,7 @@ public class BattleManager : MonoBehaviour
         };
         return lines[Random.Range(0, lines.Length)];
     }
+
     void ShowEnemyTaunt(float seconds = 1.5f)
     {
         var t = enemyQuipText ? enemyQuipText : enemyCadenceText;
@@ -240,17 +243,41 @@ public class BattleManager : MonoBehaviour
         }
     }
     string BossLabel(BossKind k) =>
-        k == BossKind.Sun ? "SUN" :
-        k == BossKind.Water ? "WATER" :
-        k == BossKind.Soil ? "SOIL" :
-        "FINAL";
+        k == BossKind.Sun ? "Sunny" :
+        k == BossKind.Water ? "Watero" :
+        k == BossKind.Soil ? "Soiler" :
+        "the mcfuckler";
 
     bool MoveMatchesBoss(Move m, BossKind k) =>
         (k == BossKind.Sun && m == Move.Sun) ||
         (k == BossKind.Water && m == Move.Water) ||
         (k == BossKind.Soil && m == Move.Soil);
 
-public void OnSunPressed()
+        void ShowBossTitle(BossKind kind)
+        {
+            if (!bossAppearsText) return;
+
+            string title = kind switch
+            {
+                BossKind.Sun   => "Sunny Appears!",
+                BossKind.Water => "Watero Appears!",
+                BossKind.Soil  => "Soiler Appears!",
+                BossKind.Final => "The mcfuckler Appears!",
+                _              => "Boss Appears!"
+            };
+            bossAppearsText.text = title;
+            StartCoroutine(ClearTextAfterDelay(bossAppearsText, 2.5f));
+        }
+
+    void TriggerBossAnimation(BossKind kind)
+    {
+        plantAnimationController.SetBool("shouldTransitionTo1", kind == BossKind.Sun);
+        plantAnimationController.SetBool("shouldTransitionTo2", kind == BossKind.Water);
+        plantAnimationController.SetBool("shouldTransitionTo3", kind == BossKind.Soil);
+        plantAnimationController.SetBool("shouldTransitionTo4", kind == BossKind.Final);
+    }
+
+    public void OnSunPressed()
     {
         if (playerSunLocked)
         {
@@ -258,7 +285,6 @@ public void OnSunPressed()
             return;
         }
 
-        // Play the press animation
         sunButtonAnimator.Play("SunButtonPressed", -1, 0f);
 
         if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Sun));
@@ -290,6 +316,7 @@ public void OnSunPressed()
 
         if (playerCadenceText) playerCadenceText.text = "";
         if (enemyCadenceText) enemyCadenceText.text = "";
+        if (bossTitle) bossTitle.text = "";
         plantAnimationController.SetBool("shouldTransitionTo1", true);
         plantAnimationController.SetBool("shouldTransitionTo2", false);
         plantAnimationController.SetBool("shouldTransitionTo3", false);
@@ -413,6 +440,11 @@ public void OnSunPressed()
             float mult = bossThisCycleIsFinal ? finalBossHpMultiplier : 1f;
             int hp = Mathf.RoundToInt(bossHealth * currentHpScale * mult);
             currentEnemy = new Enemy(EnemyType.Boss, hp);
+            ShowBossTitle(currentBossKind);
+            bossTitle.text = BossLabel(currentBossKind);
+
+            TriggerBossAnimation(currentBossKind);
+
             switch (wave)
             {
                 case 1:
@@ -506,7 +538,6 @@ public void OnSunPressed()
 
         specialWasReady = isReady;
     }
-
 
     void IncrementSpecialMeter(int amt = 1)
     {
