@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
+
 public class EnemySpawner : MonoBehaviour
 {
     [Header("Enemy Settings")]
@@ -13,7 +14,7 @@ public class EnemySpawner : MonoBehaviour
     [Header("Visual Mappings")]
     public Sprite normalEnemySpriteOverride;
     public RuntimeAnimatorController normalAnimator;
-    public List<BossVisual> bossVisuals = new();
+    public List<BossVisual> bossVisuals = new List<BossVisual>();
 
     [Header("UI Targets")]
     public UnityEngine.UI.Image enemyImage;
@@ -25,12 +26,11 @@ public class EnemySpawner : MonoBehaviour
     public Enemy currentEnemy { get; private set; }
     public int normalsRemainingInCycle { get; private set; }
     public int cycleNumber { get; private set; } = 1;
-   public float currentHpScale { get; set; } = 1f;
     public int setNumber { get; set; } = 1;
-
+    public float currentHpScale { get; set; } = 1f;
     public bool bossThisCycleIsFinal { get; private set; } = false;
     public BossKind currentBossKind { get; private set; } = BossKind.Sun;
-    public List<BossKind> pendingBosses = new();
+    public List<BossKind> pendingBosses = new List<BossKind>();
 
     int wave = 1;
 
@@ -49,8 +49,8 @@ public class EnemySpawner : MonoBehaviour
     public void StartNewCycle()
     {
         normalsRemainingInCycle = normalsPerCycle;
-        ClearBossUI();
-        SetAnimBoolsForCycleStart();
+        if (bossTitle) bossTitle.text = "";
+        if (bossAppearsText) bossAppearsText.text = "";
     }
 
     public void SpawnNextEnemy()
@@ -84,9 +84,6 @@ public class EnemySpawner : MonoBehaviour
     {
         if (!bossThisCycleIsFinal)
         {
-            if (currentBossKind == BossKind.Sun)   ; // unlocks handled elsewhere
-            if (currentBossKind == BossKind.Water) ;
-            if (currentBossKind == BossKind.Soil)  ;
             if (pendingBosses.Count > 0) pendingBosses.RemoveAt(0);
         }
         else
@@ -98,11 +95,15 @@ public class EnemySpawner : MonoBehaviour
         cycleNumber++;
     }
 
-    // helpers
-    void ApplyNormalVisuals()
+    public void ApplyNormalVisuals()
     {
-        if (enemyImage && normalEnemySpriteOverride)
-            enemyImage.sprite = normalEnemySpriteOverride;
+        if (enemyImage)
+        {
+            if (normalEnemySpriteOverride) enemyImage.sprite = normalEnemySpriteOverride;
+            enemyImage.enabled = true;
+            enemyImage.color = Color.white;
+            enemyImage.preserveAspect = true;
+        }
 
         if (plantAnimationController && normalAnimator)
         {
@@ -111,6 +112,34 @@ public class EnemySpawner : MonoBehaviour
             plantAnimationController.Update(0f);
             plantAnimationController.Play("Idle", 0, 0f);
         }
+
+        if (bossTitle) bossTitle.text = "";
+    }
+
+    public void ApplyBossVisuals(BossKind kind)
+    {
+        var vis = GetBossVisual(kind);
+        if (vis == null) { Debug.LogWarning($"[EnemySpawner] No BossVisual for {kind}"); return; }
+
+        if (enemyImage)
+        {
+            if (vis.bossSprite) enemyImage.sprite = vis.bossSprite;
+            enemyImage.enabled = true;
+            enemyImage.color = Color.white;
+            enemyImage.preserveAspect = true;
+        }
+
+        if (plantAnimationController && vis.animator)
+        {
+            plantAnimationController.runtimeAnimatorController = vis.animator;
+            plantAnimationController.Rebind();
+            plantAnimationController.Update(0f);
+            plantAnimationController.Play("Idle", 0, 0f);
+        }
+
+        if (bossTitle) bossTitle.text = vis.displayName;
+
+        Debug.Log($"[EnemySpawner] Boss visuals applied: kind={kind}, sprite={(enemyImage && enemyImage.sprite ? enemyImage.sprite.name : "null")}, animator={(plantAnimationController && plantAnimationController.runtimeAnimatorController ? plantAnimationController.runtimeAnimatorController.name : "null")}");
     }
 
     BossVisual GetBossVisual(BossKind kind)
@@ -118,32 +147,6 @@ public class EnemySpawner : MonoBehaviour
         foreach (var v in bossVisuals) if (v.kind == kind) return v;
         return null;
     }
-
-  void ApplyBossVisuals(BossKind kind)
-    {
-        var vis = GetBossVisual(kind);
-        if (vis == null) return;
-
-        if (enemyImage)
-        {
-            if (vis.bossSprite) enemyImage.sprite = vis.bossSprite;
-            enemyImage.enabled = true;
-        }
-
-        if (plantAnimationController)
-        {
-            if (vis.animator)
-            {
-                plantAnimationController.runtimeAnimatorController = vis.animator;
-                plantAnimationController.Rebind();
-                plantAnimationController.Update(0f);
-                plantAnimationController.Play("Idle", 0, 0f);
-            }
-        }
-
-        if (bossTitle) bossTitle.text = vis.displayName;
-    }
-
 
     void ShowBossTitle(BossKind kind)
     {
@@ -164,25 +167,6 @@ public class EnemySpawner : MonoBehaviour
         k == BossKind.Water ? "Watero" :
         k == BossKind.Soil ? "Soiler" :
         "the mcfuckler";
-
-    void ClearBossUI()
-    {
-        if (bossTitle) bossTitle.text = "";
-        if (bossAppearsText) bossAppearsText.text = "";
-    }
-
-    void SetAnimBoolsForCycleStart()
-    {
-        if (!plantAnimationController) return;
-        plantAnimationController.SetBool("shouldTransitionTo1", true);
-        plantAnimationController.SetBool("shouldTransitionTo2", false);
-        plantAnimationController.SetBool("shouldTransitionTo3", false);
-        plantAnimationController.SetBool("shouldTransitionTo4", false);
-        plantAnimationController.SetBool("shouldTransitionTo5", false);
-        plantAnimationController.SetBool("shouldTransitionTo6", false);
-        plantAnimationController.SetBool("shouldTransitionTo7", false);
-        plantAnimationController.SetBool("shouldTransitionTo8", false);
-    }
 
     void ShuffleList<T>(List<T> list)
     {

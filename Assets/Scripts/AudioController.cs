@@ -2,34 +2,42 @@ using UnityEngine;
 
 public class AudioController : MonoBehaviour
 {
+    [Header("Normal Hit")]
     public AudioClip normalHitSfx;
-    [Range(0f,1f)] public float normalHitVolume = 0.9f;
-    [Range(0f,0.3f)] public float normalHitPitchJitter = 0.03f;
-    public float normalHitPitch = 1f;
+    [Range(0f, 1f)] public float normalHitVolume = 0.9f;
+    [Range(0f, 0.3f)] public float normalHitPitchJitter = 0.03f;
+    public float normalHitPitch = 1.0f;
 
+    [Header("Special")]
     public AudioClip specialSfx;
-    [Range(0f,1f)] public float specialSfxVolume = 0.9f;
-    [Range(0f,0.3f)] public float specialSfxPitchJitter = 0.04f;
-    public float specialSfxPitch = 1f;
+    [Range(0f, 1f)] public float specialSfxVolume = 0.9f;
+    [Range(0f, 0.3f)] public float specialSfxPitchJitter = 0.04f;
+    public float specialSfxPitch = 1.0f;
 
     AudioSource sfx;
 
     void Awake()
     {
-        sfx = gameObject.AddComponent<AudioSource>();
+        sfx = GetComponent<AudioSource>();
+        if (!sfx) sfx = gameObject.AddComponent<AudioSource>();
         sfx.playOnAwake = false;
-        sfx.spatialBlend = 0f;
         sfx.loop = false;
+        sfx.spatialBlend = 0f;
     }
 
-    public void PlaySfx(AudioClip clip, float vol, float basePitch, float jitter)
+    public void PlayNormalHit()
     {
-        if (!clip || !sfx) return;
-        float p = basePitch + Random.Range(-jitter, jitter);
+        if (!normalHitSfx || !sfx) return;
+        float p = normalHitPitch + Random.Range(-normalHitPitchJitter, normalHitPitchJitter);
         sfx.pitch = Mathf.Clamp(p, 0.5f, 2f);
-        sfx.PlayOneShot(clip, vol);
+        sfx.PlayOneShot(normalHitSfx, normalHitVolume);
     }
 
-    public void PlayNormalHit() => PlaySfx(normalHitSfx, normalHitVolume, normalHitPitch, normalHitPitchJitter);
-    public void PlaySpecial()   => PlaySfx(specialSfx, specialSfxVolume, specialSfxPitch, specialSfxPitchJitter);
+    public void PlaySpecial()
+    {
+        if (!specialSfx || !sfx) return;
+        float p = specialSfxPitch + Random.Range(-specialSfxPitchJitter, specialSfxPitchJitter);
+        sfx.pitch = Mathf.Clamp(p, 0.5f, 2f);
+        sfx.PlayOneShot(specialSfx, specialSfxVolume);
+    }
 }

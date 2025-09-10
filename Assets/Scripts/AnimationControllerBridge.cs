@@ -13,4 +13,9 @@ public class AnimationControllerBridge : MonoBehaviour
     {
         if (animator) animator.SetBool("isSpecialing", on);
     }
+
+    public void GoIdle(string idleStateName = "Idle")
+    {
+        if (animator) animator.Play(idleStateName, 0, 0f);
+    }
 }

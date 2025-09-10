@@ -24,7 +24,6 @@ public class SpecialSystem : MonoBehaviour
     public bool specialConsumesSoaked = true;
 
     public int SpecialMeter { get; private set; } = 0;
-    public int HitStreak { get; private set; } = 0;
     public bool IsReady => SpecialMeter >= specialMeterMax;
 
     public System.Action OnBecameReady;
@@ -54,11 +53,8 @@ public class SpecialSystem : MonoBehaviour
     public void Consume()
     {
         SpecialMeter = 0;
-        HitStreak = 0;
         RefreshUI();
     }
-
-    public void AddHitStreak() { HitStreak++; }
 
     public int CalculateDamage(bool enemySoaked, bool enemySunLocked, int enemyBurnTurns)
     {

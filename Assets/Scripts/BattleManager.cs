@@ -12,13 +12,14 @@ public class BattleManager : MonoBehaviour
     public SpecialSystem special;
     public UIController ui;
     public AnimationControllerBridge animBridge;
+    public AudioController audioCtrl;
+
 
     [Header("Buttons Animators")]
     public Animator sunButtonAnimator;
     public Animator waterButtonAnimator;
     public Animator soilButtonAnimator;
     public Animator specialButtonAnimator;
-    public Animator plantAnimationController;
 
     [Header("Player")]
     public int playerMaxHealth = 10;
@@ -57,6 +58,13 @@ public class BattleManager : MonoBehaviour
         RefreshAllUI();
     }
 
+    void SetAction(bool idle = false, bool attacking = false, bool specialAct = false)
+    {
+        if (!animBridge) return;
+        animBridge.SetAttacking(attacking);
+        animBridge.SetSpecialing(specialAct);
+    }
+
     void StartNewCycle()
     {
         playerHealth = playerMaxHealth;
@@ -65,15 +73,36 @@ public class BattleManager : MonoBehaviour
         spawner.StartNewCycle();
 
         spawner.SpawnNextEnemy();
+        if (spawner.currentEnemy != null && spawner.currentEnemy.Type == EnemyType.Boss)
+            spawner.ApplyBossVisuals(spawner.currentBossKind);
+        else
+            spawner.ApplyNormalVisuals();
+
         RefreshAllUI();
+    }
+
+    void SyncSpecialAnimator()
+    {
+        if (!specialButtonAnimator) return;
+
+        bool isReady = special.IsReady;
+        specialButtonAnimator.SetBool("IsReady", isReady);
+
+        if (isReady && !specialWasReady)
+            specialButtonAnimator.SetTrigger("ReadyOnce");
+
+        if (!isReady && specialWasReady)
+            specialButtonAnimator.ResetTrigger("ReadyOnce");
+
+        specialWasReady = isReady;
     }
 
     void RefreshAllUI()
     {
         ui.RefreshHP(ui.playerHpText, ui.enemyHpText, playerHealth, playerMaxHealth, spawner.currentEnemy);
         special.RefreshUI();
+        SyncSpecialAnimator();
         RefreshStatusUI();
-        if (animBridge) { animBridge.SetAttacking(false); animBridge.SetSpecialing(false); }
         ui.SetButtonsInteractable(!inputLocked, fx.playerSunLocked, special.IsReady);
     }
 
@@ -111,11 +140,7 @@ public class BattleManager : MonoBehaviour
 
     public void OnSunPressed()
     {
-        if (fx.playerSunLocked)
-        {
-            if (ui.playerCadenceText) ui.playerCadenceText.text = "Rooted! Can't use Sun this turn.";
-            return;
-        }
+        if (fx.playerSunLocked) { if (ui.playerCadenceText) ui.playerCadenceText.text = "Rooted! Can't use Sun this turn."; return; }
         if (sunButtonAnimator) sunButtonAnimator.Play("SunButtonPressed", -1, 0f);
         if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Sun));
     }
@@ -129,12 +154,14 @@ public class BattleManager : MonoBehaviour
         if (soilButtonAnimator) soilButtonAnimator.Play("SoilButtonPressed", -1, 0f);
         if (TryLockInput()) StartCoroutine(RoundWithCountdown(Move.Soil));
     }
+
     public void OnSpecialPressed()
     {
         if (!special.IsReady) return;
         if (!TryLockInput()) return;
         if (specialButtonAnimator) specialButtonAnimator.Play("SpecialButtonPressed", -1, 0f);
-        if (animBridge) animBridge.SetSpecialing(true);
+
+        SetAction(attacking: false, specialAct: true);
         StartCoroutine(RoundWithCountdownSpecial());
     }
 
@@ -142,6 +169,8 @@ public class BattleManager : MonoBehaviour
     {
         if (spawner.currentEnemy == null) yield break;
         if (fx.playerSunLocked && playerMove != Move.Sun) fx.playerSunLocked = false;
+
+        SetAction(attacking: true, specialAct: false);
 
         Move enemyMove = GetEnemyMove(spawner.currentEnemy.Type);
 
@@ -151,10 +180,9 @@ public class BattleManager : MonoBehaviour
             ui.SetCadence(word, word);
             yield return new WaitForSeconds(beatSeconds);
         }
+
         ui.SetCadence(playerMove.ToString() + "!", enemyMove.ToString() + "!");
         yield return new WaitForSeconds(beatSeconds);
-
-        if (animBridge) animBridge.SetAttacking(true);
 
         var result = turnEngine.ApplyOutcome(
             playerMove, enemyMove,
@@ -170,8 +198,11 @@ public class BattleManager : MonoBehaviour
 
         ui.ClearCadence();
         CheckRoundOver();
+
         inputLocked = false;
         ui.SetButtonsInteractable(true, fx.playerSunLocked, special.IsReady);
+
+        SetAction(idle: true);
     }
 
     IEnumerator RoundWithCountdownSpecial()
@@ -190,23 +221,22 @@ public class BattleManager : MonoBehaviour
         yield return new WaitForSeconds(beatSeconds);
 
         special.Consume();
-        special.AddHitStreak();
+        special.RefreshUI();
+        SyncSpecialAnimator();
 
         int dmg = special.CalculateDamage(fx.enemySoaked, fx.enemySunLocked, fx.enemyBurnTurns);
         if (special.specialConsumesSoaked && fx.enemySoaked) fx.enemySoaked = false;
 
         spawner.currentEnemy.Health = Mathf.Max(0, spawner.currentEnemy.Health - dmg);
-
-        // FX
-        if (ui.enemyHpText) StartCoroutine(ui.ShakeRect(ui.enemyHpText.rectTransform, ui.shakeDuration, ui.shakeMagnitude));
-        if (ui.audioController) ui.audioController.PlaySpecial();
-        StartCoroutine(ui.ShakeScreen(special.specialShakeDuration, special.specialShakeMagnitude));
+        if (audioCtrl) audioCtrl.PlaySpecial();
 
         RefreshAllUI();
         CheckRoundOver();
 
         inputLocked = false;
         ui.SetButtonsInteractable(true, fx.playerSunLocked, special.IsReady);
+
+        SetAction(idle: true);
     }
 
     void ApplyHpDeltas(TurnResult r)
@@ -214,8 +244,13 @@ public class BattleManager : MonoBehaviour
         if (r.enemyHpDelta != 0 && spawner.currentEnemy != null)
         {
             spawner.currentEnemy.Health = Mathf.Clamp(spawner.currentEnemy.Health + r.enemyHpDelta, 0, spawner.currentEnemy.MaxHealth);
-            if (r.enemyHpDelta < 0 && ui.enemyHpText) StartCoroutine(ui.ShakeRect(ui.enemyHpText.rectTransform, ui.shakeDuration, ui.shakeMagnitude));
+            if (r.enemyHpDelta < 0)
+            {
+                if (ui.enemyHpText) StartCoroutine(ui.ShakeRect(ui.enemyHpText.rectTransform, ui.shakeDuration, ui.shakeMagnitude));
+                if (audioCtrl) audioCtrl.PlayNormalHit(); 
+            }
         }
+
         if (r.playerHpDelta != 0)
         {
             playerHealth = Mathf.Clamp(playerHealth + r.playerHpDelta, 0, playerMaxHealth);
@@ -251,13 +286,31 @@ public class BattleManager : MonoBehaviour
             if (spawner.currentEnemy.Type == EnemyType.Normal)
             {
                 playerHealth = playerMaxHealth;
-                StartCoroutine(ui.EnemySlideTransition(SpawnNextNormal));
+
+                StartCoroutine(ui.EnemySlideTransition(
+                    swapAction: SpawnNextNormal,
+                    afterSwap: () =>
+                    {
+                        if (spawner.currentEnemy != null && spawner.currentEnemy.Type == EnemyType.Boss)
+                            spawner.ApplyBossVisuals(spawner.currentBossKind);
+                        else
+                            spawner.ApplyNormalVisuals();
+                    }));
                 return;
             }
             else
             {
                 spawner.AdvanceAfterBossDefeat();
-                StartCoroutine(ui.EnemySlideTransition(StartNextCycle));
+
+                StartCoroutine(ui.EnemySlideTransition(
+                    swapAction: StartNextCycle,
+                    afterSwap: () =>
+                    {
+                        if (spawner.currentEnemy != null && spawner.currentEnemy.Type == EnemyType.Boss)
+                            spawner.ApplyBossVisuals(spawner.currentBossKind);
+                        else
+                            spawner.ApplyNormalVisuals();
+                    }));
                 return;
             }
         }

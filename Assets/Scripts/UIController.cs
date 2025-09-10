@@ -30,9 +30,6 @@ public class UIController : MonoBehaviour
     public float enemySlideDistance = 800f;
     public float enemySlideDuration = 0.35f;
 
-    [Header("Audio")]
-    public AudioController audioController;
-
     public void SetButtonsInteractable(bool on, bool playerSunLocked, bool specialReady)
     {
         if (sunButton)   sunButton.interactable = on && !playerSunLocked;
@@ -68,11 +65,9 @@ public class UIController : MonoBehaviour
             : "Enemy HP: -";
     }
 
-    public IEnumerator ShakeRect(RectTransform target, float dur, float mag, AudioClip clip = null, float vol = 1f, float basePitch = 1f, float jitter = 0f)
+    public IEnumerator ShakeRect(RectTransform target, float dur, float mag)
     {
         if (!target) yield break;
-        if (clip && audioController) audioController.PlaySfx(clip, vol, basePitch, jitter);
-
         Vector2 original = target.anchoredPosition;
         float elapsed = 0f;
         while (elapsed < dur)
@@ -86,35 +81,20 @@ public class UIController : MonoBehaviour
         target.anchoredPosition = original;
     }
 
-    public IEnumerator ShakeScreen(float duration, float magnitude, AudioClip clip = null, float vol = 1f, float basePitch = 1f, float jitter = 0f)
-    {
-        if (clip && audioController) audioController.PlaySfx(clip, vol, basePitch, jitter);
-
-        Vector3 uiOrig = uiRootToShake ? uiRootToShake.localPosition : Vector3.zero;
-        Vector3 camOrig = cameraToShake ? cameraToShake.localPosition : Vector3.zero;
-
-        float t = 0f;
-        while (t < duration)
-        {
-            Vector2 j = Random.insideUnitCircle * magnitude;
-            if (uiRootToShake) uiRootToShake.localPosition = uiOrig + new Vector3(j.x, j.y, 0);
-            if (cameraToShake) cameraToShake.localPosition = camOrig + new Vector3(j.x, j.y, 0) * 0.02f;
-            t += Time.deltaTime;
-            yield return null;
-        }
-
-        if (uiRootToShake) uiRootToShake.localPosition = uiOrig;
-        if (cameraToShake) cameraToShake.localPosition = camOrig;
-    }
-
-    public IEnumerator EnemySlideTransition(System.Func<IEnumerator> swapAction)
+    public IEnumerator EnemySlideTransition(
+        System.Func<IEnumerator> swapAction,
+        System.Action afterSwap = null)
     {
         RectTransform rt = enemyImage ? enemyImage.rectTransform : null;
         Vector2 home = rt ? rt.anchoredPosition : Vector2.zero;
         Vector2 offRight = home + new Vector2(enemySlideDistance, 0f);
 
         if (rt) yield return StartCoroutine(TweenAnchored(rt, home, offRight, enemySlideDuration));
+
         if (swapAction != null) yield return StartCoroutine(swapAction());
+
+        afterSwap?.Invoke();
+
         if (rt)
         {
             Vector2 offLeft = home - new Vector2(enemySlideDistance, 0f);
@@ -141,7 +121,6 @@ public class UIController : MonoBehaviour
         if (playerCadenceText) playerCadenceText.text = player;
         if (enemyCadenceText)  enemyCadenceText.text  = enemy;
     }
-
     public void ClearCadence()
     {
         if (playerCadenceText) playerCadenceText.text = "";
