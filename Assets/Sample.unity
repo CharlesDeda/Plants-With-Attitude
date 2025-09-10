@@ -3133,12 +3133,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91197838b27e84cb29bc158d7e0ceaca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleManager
-  spawner: {fileID: 0}
-  fx: {fileID: 0}
-  turnEngine: {fileID: 0}
-  special: {fileID: 0}
-  ui: {fileID: 0}
-  animBridge: {fileID: 0}
+  spawner: {fileID: 1866749900}
+  fx: {fileID: 1866749899}
+  turnEngine: {fileID: 1866749898}
+  special: {fileID: 1866749897}
+  ui: {fileID: 1866749896}
+  animBridge: {fileID: 1866749894}
   sunButtonAnimator: {fileID: 1634128575}
   waterButtonAnimator: {fileID: 293827714}
   soilButtonAnimator: {fileID: 1137265772}
@@ -3189,11 +3189,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d704a68415ad3448987ae6c15c69e09d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioController
-  normalHitSfx: {fileID: 0}
+  normalHitSfx: {fileID: 8300000, guid: 9e6aa3e6c5b81426e8d64f49214d8b2e, type: 3}
   normalHitVolume: 0.9
   normalHitPitchJitter: 0.03
   normalHitPitch: 1
-  specialSfx: {fileID: 0}
+  specialSfx: {fileID: 8300000, guid: 2b80b69339da44ef58eae13c2d3ed971, type: 3}
   specialSfxVolume: 0.9
   specialSfxPitchJitter: 0.04
   specialSfxPitch: 1
@@ -3209,25 +3209,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2f23f8f8c50f422e9bdf142544d0f04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIController
-  sunButton: {fileID: 0}
-  waterButton: {fileID: 0}
-  soilButton: {fileID: 0}
-  specialButton: {fileID: 0}
-  playerHpText: {fileID: 0}
-  enemyHpText: {fileID: 0}
+  sunButton: {fileID: 1634128572}
+  waterButton: {fileID: 293827711}
+  soilButton: {fileID: 1137265769}
+  specialButton: {fileID: 162275082}
+  playerHpText: {fileID: 2068754185}
+  enemyHpText: {fileID: 1928446537}
   playerCadenceText: {fileID: 0}
   enemyCadenceText: {fileID: 0}
-  enemyStatusText: {fileID: 0}
-  playerStatusText: {fileID: 0}
+  enemyStatusText: {fileID: 831691703}
+  playerStatusText: {fileID: 1950193595}
   enemyQuipText: {fileID: 0}
   shakeDuration: 1.2
   shakeMagnitude: 12
-  uiRootToShake: {fileID: 0}
-  cameraToShake: {fileID: 0}
+  uiRootToShake: {fileID: 1512751639}
+  cameraToShake: {fileID: 249767110}
   enemyImage: {fileID: 0}
   enemySlideDistance: 800
   enemySlideDuration: 0.35
-  audioController: {fileID: 0}
+  audioController: {fileID: 1866749895}
 --- !u!114 &1866749897
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3242,9 +3242,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpecialSystem
   specialMeterMax: 7
   specialDamage: 5
-  specialButton: {fileID: 0}
-  specialMeterBar: {fileID: 0}
-  specialBarFill: {fileID: 0}
+  specialButton: {fileID: 162275082}
+  specialMeterBar: {fileID: 682774882}
+  specialBarFill: {fileID: 2128062988}
   readyColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   buildingColor: {r: 0, g: 1, b: 0, a: 1}
   specialShakeDuration: 1.5
@@ -3306,12 +3306,28 @@ MonoBehaviour:
   normalsPerCycle: 1
   hpScalePerSet: 1.25
   finalBossHpMultiplier: 1.3
-  normalEnemySpriteOverride: {fileID: 0}
-  normalAnimator: {fileID: 0}
-  bossVisuals: []
+  normalEnemySpriteOverride: {fileID: -349862655, guid: 010f9418d1d49408389abb3dd1ae46ad, type: 3}
+  normalAnimator: {fileID: 9100000, guid: 8bbf874a6aa54411bbc5e8c0b31e037e, type: 2}
+  bossVisuals:
+  - kind: 0
+    displayName: Sunny
+    bossSprite: {fileID: 1581749641449800313, guid: 9d7fae34e8d184a42ae1a320a0a8f6cd, type: 3}
+    animator: {fileID: 9100000, guid: f3252071bba064c8aac70a8bd715fac8, type: 2}
+  - kind: 1
+    displayName: Watero
+    bossSprite: {fileID: -1720275717039100286, guid: 5f864d3b2f5314380be5dac99fd5d8c6, type: 3}
+    animator: {fileID: 9100000, guid: d7b142ef852df4741ab683e2ef711c15, type: 2}
+  - kind: 2
+    displayName: Soiler
+    bossSprite: {fileID: 4433742282958634428, guid: b52ada730596f4333ac5f404adc7ec77, type: 3}
+    animator: {fileID: 9100000, guid: 64cead87a5224449e880886867853347, type: 2}
+  - kind: 3
+    displayName: McFuckler
+    bossSprite: {fileID: 9035823383742510731, guid: 1db70442ba19b4fe4a52336010a83a04, type: 3}
+    animator: {fileID: 9100000, guid: f9ceb81fa902243188fb98a25f06c244, type: 2}
   enemyImage: {fileID: 0}
-  bossTitle: {fileID: 0}
-  bossAppearsText: {fileID: 0}
+  bossTitle: {fileID: 1397539625}
+  bossAppearsText: {fileID: 150609745}
   plantAnimationController: {fileID: 0}
   pendingBosses: 
 --- !u!1 &1928446534
